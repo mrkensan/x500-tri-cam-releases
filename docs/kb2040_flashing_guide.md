@@ -12,54 +12,39 @@ This guide describes how to update the firmware on the **Adafruit KB2040** orche
 
 ---
 
-## 2. Flashing Procedures
+## 2. Flashing Procedure (1200-Baud Updater)
 
-### Method 1: Automated Python Script (Recommended)
+The primary and standard method for flashing the KB2040 is using the automated **1200-baud updater script** (`flash_kb2040.py`). 
 
-When the KB2040 is connected via USB and running active firmware, the Python utility automatically commands a 1200-baud reset into the RP2040 ROM bootloader, mounts the drive, and copies the UF2 binary.
+This utility connects to the KB2040's active USB CDC serial interface and issues a standard 1200-baud "touch reset". This causes the RP2040 firmware to immediately reboot into its internal ROM bootloader without requiring any physical buttons to be pressed or holding down the boot switch. The script then detects the resulting `RPI-RP2` mass-storage drive, mounts it, deploys the UF2 binary, and reboots the board into operation.
 
-#### Prerequisites:
-Install `pyserial` if not already installed:
+### Prerequisites
+Ensure `pyserial` is installed on your workstation:
 ```bash
 pip install pyserial
 ```
 
-#### Run Flashing Utility:
+### Execution
+Connect the KB2040 to your workstation via USB and run:
 ```bash
 sudo python3 ./kb2040/tools/flash_kb2040.py
 ```
 
-#### Output:
+### Output Walkthrough
 ```text
-[FLASH] Triggering 1200-baud reset on /dev/serial/by-id/...
+[FLASH] Triggering 1200-baud reset on /dev/serial/by-id/usb-Raspberry_Pi_Pico_...
 [FLASH] Waiting for RPI-RP2 bootloader drive...
 [FLASH] Bootloader detected at /dev/disk/by-label/RPI-RP2
-[FLASH] Copying .../tri_cam_kb2040.uf2 to /mnt/pico/...
+[FLASH] Copying /path/to/kb2040/releases/latest/tri_cam_kb2040.uf2 to /mnt/pico/...
 [FLASH] Firmware copied! Board is flashing and rebooting...
 [FLASH] SUCCESS! KB2040 is running the new firmware.
 ```
 
----
-
-### Method 2: Manual Hardware BOOTSEL Mode
-
-If the board is unresponsive, blank, or has fresh factory firmware:
-
-1. **Locate the Buttons:**
-   - On the Adafruit KB2040 board, find the small push button labeled **BOOT** (next to the USB-C connector).
-2. **Engage Bootloader:**
-   - Press and **hold** the **BOOT** button.
-   - While holding **BOOT**, plug the USB-C cable into your workstation.
-   - Release the button after 1 second.
-3. **Copy Firmware:**
-   - The board will enumerate as a USB mass-storage drive named `RPI-RP2`.
-   - Copy the UF2 binary to the volume:
-     ```bash
-     cp kb2040/releases/latest/tri_cam_kb2040.uf2 /media/$USER/RPI-RP2/
-     ```
-     *(Or drag-and-drop the file using your file manager).*
-4. **Reboot:**
-   - The RP2040 will immediately flash its internal flash memory, dismount the USB drive, and boot into operation.
+### Flashing a Specific Release
+By default, the updater script flashes the current production release (`kb2040/releases/latest/tri_cam_kb2040.uf2`). To flash a specific binary or release version, pass the path directly:
+```bash
+sudo python3 ./kb2040/tools/flash_kb2040.py kb2040/releases/r78/tri_cam_kb2040.uf2
+```
 
 ---
 

@@ -55,15 +55,14 @@
 
 ### Flashing Quickstart
 
-#### Method A: Automated Flashing Script (Recommended)
-Connect the KB2040 via USB to your workstation:
+Connect the KB2040 module via USB to your workstation and run the 1200-baud updater script:
 ```bash
 sudo python3 ./kb2040/tools/flash_kb2040.py
 ```
-*(The script will issue a 1200-baud reset, mount the bootloader volume, and copy the latest UF2).*
 
-#### Method B: Manual BOOTSEL Drag-and-Drop
-1. Hold down the tiny **BOOT** button on the KB2040 while plugging in the USB cable.
-2. The board will mount as a mass-storage drive named `RPI-RP2`.
-3. Copy `kb2040/releases/latest/tri_cam_kb2040.uf2` to the `RPI-RP2` drive.
-4. The board will automatically flash, dismount, and boot the new firmware.
+The updater script automatically:
+1. Detects the KB2040 USB serial device.
+2. Triggers a 1200-baud touch reset to switch the RP2040 microcontroller into its ROM bootloader without pressing physical buttons.
+3. Mounts the resulting `RPI-RP2` volume at `/mnt/pico`.
+4. Copies `kb2040/releases/latest/tri_cam_kb2040.uf2`.
+5. Reboots the board into the active production firmware.

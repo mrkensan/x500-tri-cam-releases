@@ -32,19 +32,13 @@ For full instructions, see **[MicroSD Card Preparation Guide](docs/sd_card_prep_
 ---
 
 ### 2. Flashing the KB2040 Airframe Orchestrator
-Connect the KB2040 module via USB to your workstation.
-
-**Automated Flash:**
+Connect the KB2040 module via USB to your workstation and run the 1200-baud automated updater script:
 ```bash
 sudo python3 ./kb2040/tools/flash_kb2040.py
 ```
+*(The script connects to the active serial interface, issues an automated 1200-baud touch reset to switch the RP2040 into bootloader mode, mounts the drive, copies the production UF2 firmware, and automatically reboots the board).*
 
-**Manual Drag-and-Drop (BOOTSEL):**
-1. Hold down the **BOOT** button while connecting the USB cable.
-2. The board will appear as a USB drive named `RPI-RP2`.
-3. Copy `kb2040/releases/latest/tri_cam_kb2040.uf2` to the drive.
-
-For detailed steps and pinouts, see **[KB2040 Flashing Guide](docs/kb2040_flashing_guide.md)**.
+For full details, see **[KB2040 Flashing Guide](docs/kb2040_flashing_guide.md)**.
 
 ---
 
