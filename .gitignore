@@ -1,0 +1,19 @@
+# Base OS downloads & cache
+downloads/
+*.tar.gz
+!rp2w/releases/**/*.tar.gz
+
+# Python cache & virtualenvs
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+# Editor & System artifacts
+.devin/
+.vscode/
+.idea/
+*~
+*.swp
+.DS_Store
