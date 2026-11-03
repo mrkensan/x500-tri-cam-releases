@@ -2,38 +2,37 @@
 set -e
 
 # ==============================================================================
-# RP2W SD Card End-to-End Preparation Tool (Production Releases)
+# RP2W SD Card End-to-End Preparation Tool
 #
 # Partitions, formats with flash-aligned geometry, and provisions the
 # Alpine Linux OS, kernel boot configurations, and production overlay
 # onto a target MicroSD card for use in the Raspberry Pi Zero 2W nodes.
 #
-# Requirements: parted dosfstools exfatprogs wipefs tar sha256sum (curl or wget)
+# Requirements: parted dosfstools exfatprogs wipefs tar
 # ==============================================================================
 
 if [ "$EUID" -ne 0 ]; then
-  echo "Error: Must be run as root (e.g., sudo ./rp2w/tools/sd-prep.sh /dev/sdb)"
+  echo "Error: Must be run as root (e.g., sudo ./scripts/sd-prep.sh /dev/sdb)"
   exit 1
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RP2W_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-REPO_ROOT="$(cd "$RP2W_DIR/.." && pwd)"
-DOWNLOADS_DIR="$REPO_ROOT/downloads"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 DISK=""
 AUTO_CONFIRM=0
+REBUILD_OVERLAY=0
 RELEASE_TAG="latest"
 RELEASE_SPECIFIED=0
-
-ALPINE_URL="https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/aarch64/alpine-rpi-3.24.1-aarch64.tar.gz"
-EXPECTED_SHA256="f50672e626f234e13686eb7534292e5b7c0a639986d8afd87c25526bc7a75882"
-TARBALL="$DOWNLOADS_DIR/alpine-rpi-3.24.1-aarch64.tar.gz"
 
 while [ $# -gt 0 ]; do
   case "$1" in
     -y|--yes)
       AUTO_CONFIRM=1
+      shift
+      ;;
+    -r|--rebuild)
+      REBUILD_OVERLAY=1
       shift
       ;;
     --release)
@@ -42,13 +41,13 @@ while [ $# -gt 0 ]; do
         RELEASE_SPECIFIED=1
         shift 2
       else
-        echo "Error: --release requires a release name or version tag (e.g. latest, r50)"
+        echo "Error: --release requires a release name or version tag (e.g. latest, r44)"
         exit 1
       fi
       ;;
     -*)
       echo "Unknown option: $1"
-      echo "Usage: sudo $0 <block_device> [-y|--yes] [--release <name>]"
+      echo "Usage: sudo $0 <block_device> [-y|--yes] [-r|--rebuild] [--release <name>]"
       exit 1
       ;;
     *)
@@ -64,7 +63,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$DISK" ] || [ ! -b "$DISK" ]; then
-  echo "Usage: sudo $0 <block_device> [-y|--yes] [--release <name>]"
+  echo "Usage: sudo $0 <block_device> [-y|--yes] [-r|--rebuild] [--release <name>]"
   echo "Example: sudo $0 /dev/sdb"
   echo "         sudo $0 /dev/mmcblk0 --yes --release latest"
   exit 1
@@ -76,7 +75,11 @@ if [ "$DISK" = "/dev/sda" ]; then
   exit 1
 fi
 
-# 0. Ensure base Alpine Linux tarball is available (download & verify if missing)
+ALPINE_URL="https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/aarch64/alpine-rpi-3.24.1-aarch64.tar.gz"
+EXPECTED_SHA256="f50672e626f234e13686eb7534292e5b7c0a639986d8afd87c25526bc7a75882"
+DOWNLOADS_DIR="$REPO_ROOT/downloads"
+TARBALL="$DOWNLOADS_DIR/alpine-rpi-3.24.1-aarch64.tar.gz"
+
 if [ ! -f "$TARBALL" ]; then
   echo "Base Alpine Linux tarball not found at $TARBALL"
   echo "Downloading Alpine Linux 3.24.1 aarch64 from official CDN..."
@@ -103,53 +106,59 @@ if [ ! -f "$TARBALL" ]; then
 fi
 
 # Resolve and advertise release target before confirmation
-RELEASE_DIR="$RP2W_DIR/releases/$RELEASE_TAG"
+RELEASE_DIR="$REPO_ROOT/releases/$RELEASE_TAG"
 OVERLAY_SHA_DISPLAY=""
 
-if [ ! -d "$RELEASE_DIR" ]; then
-  echo "Error: Release directory not found: $RELEASE_DIR"
-  echo "Available releases in $RP2W_DIR/releases/:"
-  ls -la "$RP2W_DIR/releases/" 2>/dev/null || echo "  (none)"
-  exit 1
-fi
-
-APKOVL="$RELEASE_DIR/x500.apkovl.tar.gz"
-USERCFG="$RELEASE_DIR/usercfg.txt"
-CMDLINE="$RELEASE_DIR/cmdline.txt"
-
-if [ ! -f "$APKOVL" ] || [ ! -f "$USERCFG" ] || [ ! -f "$CMDLINE" ]; then
-  echo "Error: Missing required release artifacts in $RELEASE_DIR:"
-  [ ! -f "$APKOVL" ] && echo "  - Missing $APKOVL"
-  [ ! -f "$USERCFG" ] && echo "  - Missing $USERCFG"
-  [ ! -f "$CMDLINE" ] && echo "  - Missing $CMDLINE"
-  exit 1
-fi
-
-if [ "$RELEASE_SPECIFIED" -eq 0 ]; then
-  RESOLVED_TARGET=""
-  if [ -L "$RP2W_DIR/releases/latest" ]; then
-    RESOLVED_TARGET=$(readlink "$RP2W_DIR/releases/latest")
+if [ "$REBUILD_OVERLAY" -eq 1 ]; then
+  RELEASE_TITLE="Rebuild from Source (via scripts/enroll-release.sh)"
+  BUILD_DATE_DISPLAY="(Will be compiled and enrolled from working tree)"
+else
+  if [ ! -d "$RELEASE_DIR" ]; then
+    echo "Error: Release directory not found: $RELEASE_DIR"
+    echo "Available releases in $REPO_ROOT/releases/:"
+    ls -la "$REPO_ROOT/releases/" 2>/dev/null || echo "  (none)"
+    echo "Use -r / --rebuild to compile and enroll a new release first."
+    exit 1
   fi
-  if [ -n "$RESOLVED_TARGET" ]; then
-    RELEASE_TITLE="latest -> $RESOLVED_TARGET (Default Production Release)"
+
+  APKOVL="$RELEASE_DIR/x500.apkovl.tar.gz"
+  USERCFG="$RELEASE_DIR/usercfg.txt"
+  CMDLINE="$RELEASE_DIR/cmdline.txt"
+
+  if [ ! -f "$APKOVL" ] || [ ! -f "$USERCFG" ] || [ ! -f "$CMDLINE" ]; then
+    echo "Error: Missing required release artifacts in $RELEASE_DIR:"
+    [ ! -f "$APKOVL" ] && echo "  - Missing $APKOVL"
+    [ ! -f "$USERCFG" ] && echo "  - Missing $USERCFG"
+    [ ! -f "$CMDLINE" ] && echo "  - Missing $CMDLINE"
+    exit 1
+  fi
+
+  if [ "$RELEASE_SPECIFIED" -eq 0 ]; then
+    RESOLVED_TARGET=""
+    if [ -L "$REPO_ROOT/releases/latest" ]; then
+      RESOLVED_TARGET=$(readlink "$REPO_ROOT/releases/latest")
+    fi
+    if [ -n "$RESOLVED_TARGET" ]; then
+      RELEASE_TITLE="latest -> $RESOLVED_TARGET (Default Enrolled Release)"
+    else
+      RELEASE_TITLE="latest (Default Enrolled Release)"
+    fi
   else
-    RELEASE_TITLE="latest (Default Production Release)"
+    RELEASE_TITLE="$RELEASE_TAG (Specified via CLI)"
   fi
-else
-  RELEASE_TITLE="$RELEASE_TAG (Specified via CLI)"
-fi
 
-MANIFEST_FILE="$RELEASE_DIR/release_manifest.json"
-if [ -f "$MANIFEST_FILE" ]; then
-  MANIFEST_DATE=$(grep '"build_timestamp"' "$MANIFEST_FILE" | sed -E 's/.*"build_timestamp": *"([^"]+)".*/\1/')
-  MANIFEST_COMMIT=$(grep '"git_commit"' "$MANIFEST_FILE" | sed -E 's/.*"git_commit": *"([^"]+)".*/\1/')
-  MANIFEST_REV=$(grep '"commit_count"' "$MANIFEST_FILE" | sed -E 's/.*"commit_count": *([0-9]+).*/\1/')
-  MANIFEST_SHA=$(grep '"overlay_sha256"' "$MANIFEST_FILE" | sed -E 's/.*"overlay_sha256": *"([^"]+)".*/\1/')
-  BUILD_DATE_DISPLAY="$MANIFEST_DATE (r$MANIFEST_REV-$MANIFEST_COMMIT)"
-  OVERLAY_SHA_DISPLAY="$MANIFEST_SHA"
-else
-  BUILD_DATE_DISPLAY=$(stat -c '%y' "$APKOVL" 2>/dev/null || date -r "$APKOVL" 2>/dev/null || echo "Unknown")
-  OVERLAY_SHA_DISPLAY=$(sha256sum "$APKOVL" 2>/dev/null | awk '{print $1}')
+  MANIFEST_FILE="$RELEASE_DIR/release_manifest.json"
+  if [ -f "$MANIFEST_FILE" ]; then
+    MANIFEST_DATE=$(grep '"build_timestamp"' "$MANIFEST_FILE" | sed -E 's/.*"build_timestamp": *"([^"]+)".*/\1/')
+    MANIFEST_COMMIT=$(grep '"git_commit"' "$MANIFEST_FILE" | sed -E 's/.*"git_commit": *"([^"]+)".*/\1/')
+    MANIFEST_REV=$(grep '"commit_count"' "$MANIFEST_FILE" | sed -E 's/.*"commit_count": *([0-9]+).*/\1/')
+    MANIFEST_SHA=$(grep '"overlay_sha256"' "$MANIFEST_FILE" | sed -E 's/.*"overlay_sha256": *"([^"]+)".*/\1/')
+    BUILD_DATE_DISPLAY="$MANIFEST_DATE (r$MANIFEST_REV-$MANIFEST_COMMIT)"
+    OVERLAY_SHA_DISPLAY="$MANIFEST_SHA"
+  else
+    BUILD_DATE_DISPLAY=$(stat -c '%y' "$APKOVL" 2>/dev/null || date -r "$APKOVL" 2>/dev/null || echo "Unknown")
+    OVERLAY_SHA_DISPLAY=$(sha256sum "$APKOVL" 2>/dev/null | awk '{print $1}')
+  fi
 fi
 
 echo "=========================================================="
@@ -175,6 +184,17 @@ if [ "$AUTO_CONFIRM" -ne 1 ]; then
     echo "Aborted by user."
     exit 1
   fi
+fi
+
+# 1. Resolve release artifacts (zero-compilation field mode or dev rebuild)
+if [ "$REBUILD_OVERLAY" -eq 1 ]; then
+  echo ""
+  echo "[1/6] Rebuilding production release via scripts/enroll-release.sh..."
+  "$REPO_ROOT/scripts/enroll-release.sh"
+  RELEASE_DIR="$REPO_ROOT/releases/$RELEASE_TAG"
+  APKOVL="$RELEASE_DIR/x500.apkovl.tar.gz"
+  USERCFG="$RELEASE_DIR/usercfg.txt"
+  CMDLINE="$RELEASE_DIR/cmdline.txt"
 fi
 
 echo ""

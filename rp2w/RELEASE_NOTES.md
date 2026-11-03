@@ -1,5 +1,21 @@
 # RP2W Compute Node Firmware - Release Notes
 
+## Release r51 (Current Production)
+
+- **Release Tag:** `r51`
+- **Git Commit:** `d48d2cf`
+- **Build Timestamp:** `2026-11-03T23:29:57Z`
+- **Target Hardware:** Raspberry Pi Zero 2W (3× Compute Nodes per Airframe)
+- **Overlay Package:** `rp2w/releases/r51/x500.apkovl.tar.gz`
+- **Overlay SHA-256:** `f0fa063a21bc9fa77c994178cc8e54ee2a764c99e824366a3ad3056f3f97e7c9`
+
+### Summary of Changes
+- feat(rp2w): integrate public release repository staging and auto OS download
+- feat(rp2w): enroll production release r50 with continuous in-survey AEC and flash exclusivity
+- feat(rp2w): implement chronological sortie storage, atomic log relocation, AEC calibration sweep, and release r48
+- docs(rp2w): update debug shell spec with GP5/GP6 and internal pullup analysis
+- docs(rp2w): add multi-node debug shell subsystem specification v1.0
+
 ## Release r50 (Current Production)
 
 - **Release Tag:** `r50`

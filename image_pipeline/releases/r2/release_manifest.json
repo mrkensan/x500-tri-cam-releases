@@ -1,0 +1,12 @@
+{
+  "commit_count": 2,
+  "git_commit": "81ed2ea",
+  "git_dirty": 0,
+  "build_timestamp": "2026-11-03T23:30:19Z",
+  "tools": [
+    "byr_pipeline.py",
+    "de_enroll_triad.py",
+    "tricam_ingest.py"
+  ],
+  "libdpcm_sha256": "24002972fce706dcab41f403c260cc403b133b8aec2e3af5223e9285bcba4395"
+}

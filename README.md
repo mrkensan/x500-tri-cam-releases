@@ -10,9 +10,9 @@ This repository hosts pre-compiled production firmware binaries, kernel boot con
 
 | Subsystem | Target Hardware | Current Release | Key Capabilities |
 |---|---|---|---|
-| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r50` | In-Survey AEC, Flash Exclusivity, 100MHz SDIO, Chronological Sorties |
-| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r78` | Hardware Triggering, MAVLink v2, Fleet Version Consensus, Status LED |
-| **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r1` | Triad De-Enrollment, Synchronized Ingest, RAW12 -> DNG v1.4 & JPEG |
+| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r51` | In-Survey AEC, Flash Exclusivity, 100MHz SDIO, Chronological Sorties |
+| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r80` | Hardware Triggering, MAVLink v2, Fleet Version Consensus, Status LED |
+| **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r2` | Triad De-Enrollment, Synchronized Ingest, RAW12 -> DNG v1.4 & JPEG |
 
 ---
 

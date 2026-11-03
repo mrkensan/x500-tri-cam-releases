@@ -1,5 +1,21 @@
 # KB2040 Orchestrator Firmware - Release Notes
 
+## Release r80 (Current Production)
+
+- **Release Tag:** `r80`
+- **Git Commit:** `e11d211`
+- **Build Timestamp:** `2026-11-03T23:30:15Z`
+- **Target Hardware:** Adafruit KB2040 (Raspberry Pi RP2040 Dual ARM Cortex-M0+)
+- **Firmware Binary:** `kb2040/releases/r80/tri_cam_kb2040.uf2`
+- **Binary SHA-256:** `566e6e14eb15d3e0aa2d73d2c20b7929d7944ad837778d1b0ccb263c4bfe2413`
+
+### Summary of Changes
+- fix(tools): support dual resolution for default UF2 in flash_kb2040.py
+- feat(kb2040): integrate git revision tracking and release enrollment pipeline
+- feat(mavlink): implement DIGICAM_CONFIGURE (#202), in-survey AEC, and preflight calibration handoff
+- feat(mavlink): unify command dictionary, chronological sortie identity, and calibration sweep mode
+- docs(kb2040): update debug shell spec with GP5/GP6 and internal pullup analysis
+
 ## Release r78 (Current Production)
 
 - **Release Tag:** `r78`

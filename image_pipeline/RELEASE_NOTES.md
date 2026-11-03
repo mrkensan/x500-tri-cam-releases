@@ -1,5 +1,18 @@
 # Image Pipeline Tools - Release Notes
 
+## Release r2 (Current Production)
+
+- **Release Tag:** `r2`
+- **Git Commit:** `81ed2ea`
+- **Build Timestamp:** `2026-11-03T23:30:19Z`
+- **Target Systems:** Host Processing Workstations (Linux x86_64, macOS, Windows)
+- **Primary Modules:** Ingestion, Triad De-Enrollment, and Bayer RAW12 Processing
+- **DPCM Accelerator SHA-256:** `24002972fce706dcab41f403c260cc403b133b8aec2e3af5223e9285bcba4395`
+
+### Summary of Changes
+- feat: add automated release enrollment pipeline
+- feat: initialize GCC X500 Tri-Cam Image Pipeline repository
+
 ## Release r1 (Current Production)
 
 - **Release Tag:** `r1`
