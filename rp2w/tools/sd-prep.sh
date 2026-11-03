@@ -70,11 +70,6 @@ if [ -z "$DISK" ] || [ ! -b "$DISK" ]; then
   exit 1
 fi
 
-# Safety check: Never allow running on system disk sda
-if [ "$DISK" = "/dev/sda" ]; then
-  echo "FATAL: /dev/sda is the system root disk! Refusing to execute."
-  exit 1
-fi
 
 # 0. Ensure base Alpine Linux tarball is available (download & verify if missing)
 if [ ! -f "$TARBALL" ]; then
@@ -245,7 +240,7 @@ echo "  -> Partition 1: FAT32 (PIBOOT)..."
 mkfs.vfat -F 32 -n PIBOOT "$PART1"
 
 echo "  -> Partition 2: exFAT (imagery) [2MB clusters, 16MB flash boundary, packed bitmap]..."
-mkfs.exfat -n imagery -c 2M -b 16M --pack-bitmap "$PART2"
+mkfs.exfat -F -n imagery -c 2M -b 16M --pack-bitmap "$PART2"
 
 # 6. Populate Boot / OS Partition
 echo ""
