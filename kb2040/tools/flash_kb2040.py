@@ -10,12 +10,7 @@ import sys
 import time
 import glob
 import subprocess
-
-try:
-    import serial
-except ImportError:
-    print("[ERROR] pyserial is required. Install with: pip install pyserial")
-    sys.exit(1)
+import serial
 
 MOUNT_DIR = "/mnt/pico"
 LABEL_DEV = "/dev/disk/by-label/RPI-RP2"
@@ -26,7 +21,8 @@ def run_cmd(cmd, check=True):
         raise RuntimeError(f"Command failed ({cmd}): {res.stderr.strip()}")
     return res.stdout.strip()
 
-KB2040_SERIAL_ID = "DF648C8653"
+KB2040_SERIAL_ID = "DF653C9527"
+                    
 
 def find_serial_port():
     ports = [p for p in glob.glob(f"/dev/serial/by-id/*{KB2040_SERIAL_ID}*") if "Gadget" not in p]
@@ -74,8 +70,6 @@ def flash_uf2(uf2_path):
         
         if not wait_for_bootloader():
             print("[ERROR] RPI-RP2 bootloader did not appear!")
-            print("Tip: You can manually hold the BOOTSEL button while plugging in the USB cable,")
-            print(f"     then copy {uf2_path} to the mounted RPI-RP2 drive.")
             sys.exit(1)
 
     print(f"[FLASH] Bootloader detected at {LABEL_DEV}")
@@ -99,8 +93,9 @@ def flash_uf2(uf2_path):
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    kb2040_dir = os.path.abspath(os.path.join(script_dir, ".."))
-    default_uf2 = os.path.join(kb2040_dir, "releases", "latest", "tri_cam_kb2040.uf2")
+    release_uf2 = os.path.abspath(os.path.join(script_dir, "..", "releases", "latest", "tri_cam_kb2040.uf2"))
+    build_uf2 = os.path.abspath(os.path.join(script_dir, "..", "build", "tri_cam_kb2040.uf2"))
+    default_uf2 = release_uf2 if os.path.exists(release_uf2) else build_uf2
 
     target_uf2 = sys.argv[1] if len(sys.argv) > 1 else default_uf2
     flash_uf2(target_uf2)

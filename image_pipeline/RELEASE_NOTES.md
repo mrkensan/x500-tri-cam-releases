@@ -1,10 +1,14 @@
 # Image Pipeline Tools - Release Notes
 
-## Release v1.0 (Production Tools)
+## Release r1 (Current Production)
 
+- **Release Tag:** `r1`
+- **Git Commit:** `d880488`
+- **Build Timestamp:** `2026-11-03T23:28:41Z`
 - **Target Systems:** Host Processing Workstations (Linux x86_64, macOS, Windows)
 - **Primary Modules:** Ingestion, Triad De-Enrollment, and Bayer RAW12 Processing
 - **Binary Components:** Pre-compiled `libdpcm.so` (Linux x86_64 C accelerator)
+- **DPCM Accelerator SHA-256:** `24002972fce706dcab41f403c260cc403b133b8aec2e3af5223e9285bcba4395`
 
 ---
 
