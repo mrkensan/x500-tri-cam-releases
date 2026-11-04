@@ -17,7 +17,16 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ "$SCRIPT_DIR" == */Releases/rp2w/tools* ]]; then
+  RP2W_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+  REPO_ROOT="$(cd "$RP2W_DIR/.." && pwd)"
+  RELEASES_DIR="$RP2W_DIR/releases"
+  DOWNLOADS_DIR="$REPO_ROOT/downloads"
+else
+  REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+  RELEASES_DIR="$REPO_ROOT/releases"
+  DOWNLOADS_DIR="$REPO_ROOT/downloads"
+fi
 
 DISK=""
 AUTO_CONFIRM=0
@@ -69,10 +78,71 @@ if [ -z "$DISK" ] || [ ! -b "$DISK" ]; then
   exit 1
 fi
 
-# Safety check: Never allow running on system disk sda
-if [ "$DISK" = "/dev/sda" ]; then
-  echo "FATAL: /dev/sda is the system root disk! Refusing to execute."
-  exit 1
+# ==============================================================================
+# Robust Safety Checks: Protect system root, boot, home, and swap partitions
+# ==============================================================================
+
+TARGET_CANONICAL=$(readlink -f "$DISK")
+
+# 1. Identify all parent block devices backing active critical system mount points
+CRITICAL_MOUNTS=("/" "/boot" "/boot/efi" "/home" "/var" "/usr")
+for mnt in "${CRITICAL_MOUNTS[@]}"; do
+  dev_src=$(findmnt -n -o SOURCE "$mnt" 2>/dev/null || true)
+  if [ -n "$dev_src" ]; then
+    dev_canon=$(readlink -f "$dev_src")
+    pk=$(lsblk -no PKNAME "$dev_canon" 2>/dev/null | head -n1 || true)
+    if [ -n "$pk" ]; then
+      dev_disk_canon=$(readlink -f "/dev/$pk")
+    else
+      dev_disk_canon="$dev_canon"
+    fi
+    if [ "$TARGET_CANONICAL" = "$dev_disk_canon" ]; then
+      echo "FATAL: $DISK is the active host system disk (hosts '$mnt' on $dev_src)!"
+      echo "Refusing to execute to prevent system destruction."
+      exit 1
+    fi
+  fi
+done
+
+# 2. Check active host swap partitions
+while read -r swap_path rest; do
+  if [[ "$swap_path" == /dev/* ]]; then
+    swap_canon=$(readlink -f "$swap_path")
+    pk=$(lsblk -no PKNAME "$swap_canon" 2>/dev/null | head -n1 || true)
+    [ -n "$pk" ] && swap_disk_canon=$(readlink -f "/dev/$pk") || swap_disk_canon="$swap_canon"
+    if [ "$TARGET_CANONICAL" = "$swap_disk_canon" ]; then
+      echo "FATAL: $DISK is used by active host swap ($swap_path)!"
+      echo "Refusing to execute."
+      exit 1
+    fi
+  fi
+done < <(tail -n +2 /proc/swaps 2>/dev/null || true)
+
+# 3. Check if any partition on the target device is currently mounted to a critical mount
+for mnt in $(lsblk -lno MOUNTPOINTS "$TARGET_CANONICAL" 2>/dev/null | grep -v '^$'); do
+  for crit in "${CRITICAL_MOUNTS[@]}"; do
+    if [ "$mnt" = "$crit" ]; then
+      echo "FATAL: $DISK has an active partition mounted at critical system path '$mnt'!"
+      exit 1
+    fi
+  done
+done
+
+# 4. Non-removable internal drive protection
+IS_REMOVABLE=$(lsblk -dno RM "$TARGET_CANONICAL" 2>/dev/null || echo "1")
+TRAN_TYPE=$(lsblk -dno TRAN "$TARGET_CANONICAL" 2>/dev/null || echo "unknown")
+
+if [ "$IS_REMOVABLE" = "0" ] && [[ "$TRAN_TYPE" =~ ^(sata|nvme|ata)$ ]] && [ "$AUTO_CONFIRM" -ne 1 ]; then
+  echo ""
+  echo "=========================================================="
+  echo "WARNING: $DISK is detected as an internal fixed disk (TRAN=$TRAN_TYPE, RM=0)."
+  echo "Standard MicroSD cards typically appear as removable USB or MMC media."
+  echo "=========================================================="
+  read -p "Type 'I_KNOW_THIS_IS_CORRECT' to proceed: " INTERNAL_CONFIRM
+  if [ "$INTERNAL_CONFIRM" != "I_KNOW_THIS_IS_CORRECT" ]; then
+    echo "Aborted by user."
+    exit 1
+  fi
 fi
 
 ALPINE_URL="https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/aarch64/alpine-rpi-3.24.1-aarch64.tar.gz"
@@ -106,7 +176,7 @@ if [ ! -f "$TARBALL" ]; then
 fi
 
 # Resolve and advertise release target before confirmation
-RELEASE_DIR="$REPO_ROOT/releases/$RELEASE_TAG"
+RELEASE_DIR="$RELEASES_DIR/$RELEASE_TAG"
 OVERLAY_SHA_DISPLAY=""
 
 if [ "$REBUILD_OVERLAY" -eq 1 ]; then
@@ -115,8 +185,8 @@ if [ "$REBUILD_OVERLAY" -eq 1 ]; then
 else
   if [ ! -d "$RELEASE_DIR" ]; then
     echo "Error: Release directory not found: $RELEASE_DIR"
-    echo "Available releases in $REPO_ROOT/releases/:"
-    ls -la "$REPO_ROOT/releases/" 2>/dev/null || echo "  (none)"
+    echo "Available releases in $RELEASES_DIR/:"
+    ls -la "$RELEASES_DIR/" 2>/dev/null || echo "  (none)"
     echo "Use -r / --rebuild to compile and enroll a new release first."
     exit 1
   fi
@@ -135,8 +205,8 @@ else
 
   if [ "$RELEASE_SPECIFIED" -eq 0 ]; then
     RESOLVED_TARGET=""
-    if [ -L "$REPO_ROOT/releases/latest" ]; then
-      RESOLVED_TARGET=$(readlink "$REPO_ROOT/releases/latest")
+    if [ -L "$RELEASES_DIR/latest" ]; then
+      RESOLVED_TARGET=$(readlink "$RELEASES_DIR/latest")
     fi
     if [ -n "$RESOLVED_TARGET" ]; then
       RELEASE_TITLE="latest -> $RESOLVED_TARGET (Default Enrolled Release)"
@@ -191,7 +261,7 @@ if [ "$REBUILD_OVERLAY" -eq 1 ]; then
   echo ""
   echo "[1/6] Rebuilding production release via scripts/enroll-release.sh..."
   "$REPO_ROOT/scripts/enroll-release.sh"
-  RELEASE_DIR="$REPO_ROOT/releases/$RELEASE_TAG"
+  RELEASE_DIR="$RELEASES_DIR/$RELEASE_TAG"
   APKOVL="$RELEASE_DIR/x500.apkovl.tar.gz"
   USERCFG="$RELEASE_DIR/usercfg.txt"
   CMDLINE="$RELEASE_DIR/cmdline.txt"
@@ -261,11 +331,26 @@ umount "$PART1" "$PART2" 2>/dev/null || true
 udisksctl unmount -b "$PART1" 2>/dev/null || true
 udisksctl unmount -b "$PART2" 2>/dev/null || true
 
+# Erase partition-level signatures and zero first 16MB of each partition
+# This eliminates "Device has existing signatures. Refusing to overwrite" in exfatprogs >= 1.4
+echo "  -> Wiping partition signatures and zeroing boundary sectors..."
+wipefs --all --force "$PART1" 2>/dev/null || true
+wipefs --all --force "$PART2" 2>/dev/null || true
+dd if=/dev/zero of="$PART1" bs=1M count=4 status=none conv=fsync 2>/dev/null || true
+dd if=/dev/zero of="$PART2" bs=1M count=16 status=none conv=fsync 2>/dev/null || true
+
+partprobe "$DISK"
+sleep 1
+
 echo "  -> Partition 1: FAT32 (PIBOOT)..."
 mkfs.vfat -F 32 -n PIBOOT "$PART1"
 
 echo "  -> Partition 2: exFAT (imagery) [2MB clusters, 16MB flash boundary, packed bitmap]..."
-mkfs.exfat -n imagery -c 2M -b 16M --pack-bitmap "$PART2"
+EXFAT_FORCE=""
+if mkfs.exfat --help 2>&1 | grep -q -- '-F'; then
+  EXFAT_FORCE="-F"
+fi
+mkfs.exfat $EXFAT_FORCE -n imagery -c 2M -b 16M --pack-bitmap "$PART2"
 
 # 6. Populate Boot / OS Partition
 echo ""
