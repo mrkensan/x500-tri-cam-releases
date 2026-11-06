@@ -33,6 +33,7 @@ AUTO_CONFIRM=0
 REBUILD_OVERLAY=0
 RELEASE_TAG="latest"
 RELEASE_SPECIFIED=0
+FORCE_WIPE_UNOFFLOADED=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -54,9 +55,13 @@ while [ $# -gt 0 ]; do
         exit 1
       fi
       ;;
+    --force-wipe-unoffloaded)
+      FORCE_WIPE_UNOFFLOADED=1
+      shift
+      ;;
     -*)
       echo "Unknown option: $1"
-      echo "Usage: sudo $0 <block_device> [-y|--yes] [-r|--rebuild] [--release <name>]"
+      echo "Usage: sudo $0 <block_device> [-y|--yes] [-r|--rebuild] [--release <name>] [--force-wipe-unoffloaded]"
       exit 1
       ;;
     *)
@@ -72,7 +77,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$DISK" ] || [ ! -b "$DISK" ]; then
-  echo "Usage: sudo $0 <block_device> [-y|--yes] [-r|--rebuild] [--release <name>]"
+  echo "Usage: sudo $0 <block_device> [-y|--yes] [-r|--rebuild] [--release <name>] [--force-wipe-unoffloaded]"
   echo "Example: sudo $0 /dev/sdb"
   echo "         sudo $0 /dev/mmcblk0 --yes --release latest"
   exit 1
@@ -246,6 +251,122 @@ if [ -n "$OVERLAY_SHA_DISPLAY" ]; then
 fi
 echo "=========================================================="
 echo ""
+
+# ==============================================================================
+# Pre-Wipe Data Safety & Un-Offloaded Imagery Audit
+# Inspects existing partitions on target device to verify that all .byr files
+# have matching offload receipts (.offload_receipt_*.json).
+# ==============================================================================
+
+echo "Auditing target device for un-offloaded aerial survey imagery..."
+UNOFFLOADED_DETECTED=0
+AUDIT_FAILURE_REPORT=""
+AUDIT_SUCCESS_REPORT=""
+
+for part_name in $(lsblk -lno NAME "$DISK" 2>/dev/null | tail -n +2); do
+  part_dev="/dev/$part_name"
+  [ -b "$part_dev" ] || continue
+
+  INSPECT_MNT=$(mktemp -d /tmp/sd_prep_inspect_XXXXXX)
+
+  if mount -o ro "$part_dev" "$INSPECT_MNT" 2>/dev/null; then
+    PY_AUDIT_OUTPUT=$(python3 - "$INSPECT_MNT" "$part_dev" <<'EOF'
+import os, sys, glob, json
+
+inspect_root = sys.argv[1]
+part_dev = sys.argv[2]
+
+byr_files = glob.glob(os.path.join(inspect_root, "**", "*.byr"), recursive=True)
+if not byr_files:
+    sys.exit(0)
+
+dirs_with_byr = sorted(set(os.path.dirname(os.path.abspath(f)) for f in byr_files))
+
+unoffloaded = []
+verified = []
+
+for d in dirs_with_byr:
+    f_count = len(glob.glob(os.path.join(d, "*.byr")))
+    receipts = sorted(glob.glob(os.path.join(d, ".offload_receipt_*.json")))
+
+    matched = None
+    for rf in receipts:
+        try:
+            with open(rf, "r") as r_f:
+                r_data = json.load(r_f)
+            if r_data.get("status") == "VERIFIED_COMPLETE" and r_data.get("file_count") == f_count:
+                matched = r_data
+                break
+        except Exception:
+            pass
+
+    rel_d = os.path.relpath(d, inspect_root)
+    if matched:
+        u = matched.get("offloader_user", "unknown")
+        h = matched.get("offloader_host", "unknown")
+        ts = matched.get("offloaded_at_utc", "unknown")
+        dst = matched.get("destination_path", "unknown")
+        verified.append(f"    • [VERIFIED] {rel_d} ({f_count} frames) on {part_dev}\n      Offloaded by '{u}@{h}' at {ts}\n      Destination: {dst}")
+    else:
+        unoffloaded.append(f"    • [UN-OFFLOADED] {rel_d} ({f_count} frames) on {part_dev} (NO VALID RECEIPT!)")
+
+if verified:
+    print("VERIFIED_ITEMS:")
+    for v in verified:
+        print(v)
+
+if unoffloaded:
+    print("UNOFFLOADED_ITEMS:")
+    for u in unoffloaded:
+        print(u)
+    sys.exit(2)
+
+sys.exit(0)
+EOF
+)
+    PY_STATUS=$?
+    umount "$INSPECT_MNT" 2>/dev/null || true
+    rmdir "$INSPECT_MNT" 2>/dev/null || true
+
+    if [ "$PY_STATUS" -eq 2 ]; then
+      UNOFFLOADED_DETECTED=1
+      AUDIT_FAILURE_REPORT="${AUDIT_FAILURE_REPORT}${PY_AUDIT_OUTPUT}\n"
+    elif [ -n "$PY_AUDIT_OUTPUT" ]; then
+      AUDIT_SUCCESS_REPORT="${AUDIT_SUCCESS_REPORT}${PY_AUDIT_OUTPUT}\n"
+    fi
+  else
+    rmdir "$INSPECT_MNT" 2>/dev/null || true
+  fi
+done
+
+if [ "$UNOFFLOADED_DETECTED" -eq 1 ]; then
+  echo ""
+  echo "=========================================================="
+  echo "FATAL: UN-OFFLOADED AERIAL SURVEY IMAGERY DETECTED!"
+  echo "=========================================================="
+  echo -e "$AUDIT_FAILURE_REPORT"
+  echo "Refusing to wipe $DISK to prevent permanent photogrammetry data loss."
+  echo "Please offload this card using 'de_enroll_triad.py' first."
+  echo "=========================================================="
+  if [ "$FORCE_WIPE_UNOFFLOADED" -eq 1 ]; then
+    echo "WARNING: --force-wipe-unoffloaded specified. Overriding safety block!"
+    echo "=========================================================="
+    echo ""
+  else
+    echo "(To intentionally destroy this imagery and force wipe, re-run with: --force-wipe-unoffloaded)"
+    echo ""
+    exit 1
+  fi
+elif [ -n "$AUDIT_SUCCESS_REPORT" ]; then
+  echo ""
+  echo "[PASS] Pre-Wipe Data Safety Audit:"
+  echo -e "$AUDIT_SUCCESS_REPORT"
+  echo "All imagery on $DISK verified offloaded. Safe to wipe."
+  echo ""
+else
+  echo "[PASS] No survey imagery found on $DISK (card is blank or already formatted)."
+  echo ""
+fi
 
 if [ "$AUTO_CONFIRM" -ne 1 ]; then
   echo "WARNING: ALL DATA ON $DISK WILL BE PERMANENTLY DESTROYED!"

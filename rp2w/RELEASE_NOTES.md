@@ -1,5 +1,21 @@
 # RP2W Compute Node Firmware - Release Notes
 
+## Release r64 (Current Production)
+
+- **Release Tag:** `r64`
+- **Git Commit:** `429c407`
+- **Build Timestamp:** `2026-11-06T22:58:37Z`
+- **Target Hardware:** Raspberry Pi Zero 2W (3× Compute Nodes per Airframe)
+- **Overlay Package:** `rp2w/releases/r64/x500.apkovl.tar.gz`
+- **Overlay SHA-256:** `0dbcd4d568122188386c1e04aab81a69c4d253cfb7a9c56fcd278abfdbd9afaf`
+
+### Summary of Changes
+- fix(tests): repair the MAVLink regression battery for the sortie folder layout, delayed log flush and rig tooling
+- fix(tools): node console discovery by USB identity; never fall back to the FTDI or KB2040 ports
+- fix(tests): remove stray leftover lines that made test_serial_metadata.py a SyntaxError
+- docs: add the IMX477-AACK-C datasheet digest (rev 0.2.0) referenced by the specs and the sensor guide
+- docs: IMX477 sensor behaviour guide, session 8 findings and updated specs
+
 ## Release r51 (Current Production)
 
 - **Release Tag:** `r51`

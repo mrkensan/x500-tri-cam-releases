@@ -1,5 +1,21 @@
 # KB2040 Orchestrator Firmware - Release Notes
 
+## Release r85 (Current Production)
+
+- **Release Tag:** `r85`
+- **Git Commit:** `4b23ef5`
+- **Build Timestamp:** `2026-11-06T22:59:44Z`
+- **Target Hardware:** Adafruit KB2040 (Raspberry Pi RP2040 Dual ARM Cortex-M0+)
+- **Firmware Binary:** `kb2040/releases/r85/tri_cam_kb2040.uf2`
+- **Binary SHA-256:** `62c1e006452a187be3136f05a4c1fb9afd105d24aefe67fe00f975cb9f8fe137`
+
+### Summary of Changes
+- docs: trigger polarity and timing contract, STREAM_ENABLE mailbox flag, trigger lab commands
+- feat(trigger): idle-high active-low XVS trigger, trigger lab, STREAM_ENABLE flag and stream-restart poke
+- feat(tools): implement sustained cadence stress testing harness with HTML reporting
+- docs(test): author SYSTEM_TESTING_AND_VALIDATION_SPEC.md and update checkpoints
+- feat(flight_plans): implement flight-plan library and automated test assertion engine
+
 ## Release r80 (Current Production)
 
 - **Release Tag:** `r80`
