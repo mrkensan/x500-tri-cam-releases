@@ -1,0 +1,11 @@
+{
+  "commit_count": 183,
+  "git_commit": "4ac305d",
+  "git_dirty": 0,
+  "build_timestamp": "2026-11-14T22:18:38Z",
+  "firmware_uf2_sha256": "b86e3efd88c04d6d55188ef734908c121324889faa69b25cffdf3ac2c80e354c",
+  "firmware_size_bytes": 366592,
+  "plan_loader_build": 3,
+  "plan_loader_crc32": "0x3fe7bad7",
+  "plan_loader_bytes": 32641
+}
