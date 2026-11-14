@@ -18,6 +18,9 @@
 ### Summary of Changes
 - AEC starts within its limits (the current exposure and ISO are clamped when AEC is turned on or its limits change)
 - Works with KB2040 r183 (the plan interface); every image's BYR header records the exposure and gain the sensor used
+- Tools (2026-11-15): `rp2w/tools/sd-prep.sh` no longer exits silently on hosts whose root is btrfs (Fedora's
+  default: `findmnt --nofsroot`); any failure now prints the line where it stopped; prompts are visible. The overlay is
+  unchanged.
 
 ## Release r64 (Previous production; rollback)
 

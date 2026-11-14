@@ -18,6 +18,9 @@ The previous releases (KB2040 r85, RP2W r64, Image Pipeline r2) stay in the rele
 
 ## Installing
 
+**Update 2026-11-15:** `rp2w/tools/sd-prep.sh` fixed: on Fedora (btrfs root) it exited without printing anything.
+`git pull` the releases repository before preparing cards.
+
 1. **Nodes:** from the releases repository, `sudo ./rp2w/tools/sd-prep.sh /dev/sdX --release latest` for each node's
    card (it wipes the card; check the device with `lsblk` first).
 2. **KB2040:** flash `kb2040/releases/latest/tri_cam_kb2040.uf2` with `kb2040/tools/flash_kb2040.py`.

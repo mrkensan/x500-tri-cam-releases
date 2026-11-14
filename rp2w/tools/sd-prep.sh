@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -e
+set -Ee
+trap 'rc=$?; printf "Error: sd-prep stopped at line %s (exit %s).\n" "$LINENO" "$rc" >&2; exit "$rc"' ERR
 
 # ==============================================================================
 # RP2W SD Card End-to-End Preparation Tool
@@ -17,7 +18,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ "$SCRIPT_DIR" == */Releases/rp2w/tools* ]]; then
+if [[ "$SCRIPT_DIR" == */rp2w/tools ]]; then
   RP2W_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
   REPO_ROOT="$(cd "$RP2W_DIR/.." && pwd)"
   RELEASES_DIR="$RP2W_DIR/releases"
@@ -87,14 +88,24 @@ fi
 # Robust Safety Checks: Protect system root, boot, home, and swap partitions
 # ==============================================================================
 
+echo "RP2W SD preparation: checking host protection for $DISK..."
 TARGET_CANONICAL=$(readlink -f "$DISK")
 
 # 1. Identify all parent block devices backing active critical system mount points
 CRITICAL_MOUNTS=("/" "/boot" "/boot/efi" "/home" "/var" "/usr")
 for mnt in "${CRITICAL_MOUNTS[@]}"; do
-  dev_src=$(findmnt -n -o SOURCE "$mnt" 2>/dev/null || true)
+  # Exclude btrfs/bind-mount suffixes such as /dev/nvme0n1p2[/@].
+  # They are not device paths and readlink -f can fail before the first prompt.
+  dev_src=$(findmnt -n --nofsroot -o SOURCE "$mnt" 2>/dev/null || true)
+  if [ "$mnt" = "/" ] && [ -z "$dev_src" ]; then
+    echo "Error: Cannot identify the host root mount (findmnt --nofsroot). Refusing to wipe." >&2
+    exit 1
+  fi
   if [ -n "$dev_src" ]; then
-    dev_canon=$(readlink -f "$dev_src")
+    if ! dev_canon=$(readlink -f "$dev_src"); then
+      echo "Error: Cannot resolve host mount '$mnt' source '$dev_src'. Refusing to wipe." >&2
+      exit 1
+    fi
     pk=$(lsblk -no PKNAME "$dev_canon" 2>/dev/null | head -n1 || true)
     if [ -n "$pk" ]; then
       dev_disk_canon=$(readlink -f "/dev/$pk")
@@ -143,7 +154,11 @@ if [ "$IS_REMOVABLE" = "0" ] && [[ "$TRAN_TYPE" =~ ^(sata|nvme|ata)$ ]] && [ "$A
   echo "WARNING: $DISK is detected as an internal fixed disk (TRAN=$TRAN_TYPE, RM=0)."
   echo "Standard MicroSD cards typically appear as removable USB or MMC media."
   echo "=========================================================="
-  read -p "Type 'I_KNOW_THIS_IS_CORRECT' to proceed: " INTERNAL_CONFIRM
+  printf "%s" "Type 'I_KNOW_THIS_IS_CORRECT' to proceed: " >&2
+  if ! IFS= read -r INTERNAL_CONFIRM; then
+    echo "No confirmation received; aborted." >&2
+    exit 1
+  fi
   if [ "$INTERNAL_CONFIRM" != "I_KNOW_THIS_IS_CORRECT" ]; then
     echo "Aborted by user."
     exit 1
@@ -270,6 +285,7 @@ for part_name in $(lsblk -lno NAME "$DISK" 2>/dev/null | tail -n +2); do
   INSPECT_MNT=$(mktemp -d /tmp/sd_prep_inspect_XXXXXX)
 
   if mount -o ro "$part_dev" "$INSPECT_MNT" 2>/dev/null; then
+    PY_STATUS=0
     PY_AUDIT_OUTPUT=$(python3 - "$INSPECT_MNT" "$part_dev" <<'EOF'
 import os, sys, glob, json
 
@@ -323,14 +339,16 @@ if unoffloaded:
 
 sys.exit(0)
 EOF
-)
-    PY_STATUS=$?
+) || PY_STATUS=$?
     umount "$INSPECT_MNT" 2>/dev/null || true
     rmdir "$INSPECT_MNT" 2>/dev/null || true
 
     if [ "$PY_STATUS" -eq 2 ]; then
       UNOFFLOADED_DETECTED=1
       AUDIT_FAILURE_REPORT="${AUDIT_FAILURE_REPORT}${PY_AUDIT_OUTPUT}\n"
+    elif [ "$PY_STATUS" -ne 0 ]; then
+      echo "Error: Imagery audit failed for $part_dev (exit $PY_STATUS). Refusing to wipe." >&2
+      exit 1
     elif [ -n "$PY_AUDIT_OUTPUT" ]; then
       AUDIT_SUCCESS_REPORT="${AUDIT_SUCCESS_REPORT}${PY_AUDIT_OUTPUT}\n"
     fi
@@ -370,7 +388,11 @@ fi
 
 if [ "$AUTO_CONFIRM" -ne 1 ]; then
   echo "WARNING: ALL DATA ON $DISK WILL BE PERMANENTLY DESTROYED!"
-  read -p "Type 'YES' to continue: " CONFIRM
+  printf "%s" "Type 'YES' to continue: " >&2
+  if ! IFS= read -r CONFIRM; then
+    echo "No confirmation received; aborted." >&2
+    exit 1
+  fi
   if [ "$CONFIRM" != "YES" ]; then
     echo "Aborted by user."
     exit 1
