@@ -50,12 +50,23 @@ sudo python3 ./kb2040/tools/flash_kb2040.py kb2040/releases/r78/tri_cam_kb2040.u
 
 ## 3. Post-Flash Status Indication
 
-Upon booting, the on-board NeoPixel (WS2812) LED signals operational status:
+The intended operating vocabulary follows User Guide Table 2. The sole detailed
+owner is the [airframe signaling spec](../../Tri-Cam%20Module/KB2040/docs/LED_AND_ALERT_SUBSYSTEM_SPEC.md).
+A successful flash or a particular release number alone does not verify every
+lifecycle behavior; check the release's validation scope before field use.
 
 | LED Color & Pattern | System State | Meaning |
 |---|---|---|
-| **Calm Green Breathing** | Standby / Nominal | Autopilot MAVLink connected, all online compute nodes match fleet baseline version (`PARITY_OK`). |
-| **Steady Blue** | Armed for Survey | Airframe armed or survey transect active; ready to receive shutter trigger events. |
-| **White Flash (Single pulse)** | Camera Trigger | Trigger signal successfully dispatched to all 3 camera nodes. |
-| **Yellow / Amber Blink** | Version Divergence | One or more connected compute nodes are running divergent or older firmware versions. (Advisory only; flight is still permitted). |
-| **Fast Red Strobe** | Hardware Fault | A critical fault is detected (e.g. camera missing or 1-bit bus degradation). |
+| **Cyan breathing (2 s)** | Boot / acquisition | Awaiting GNSS time and camera-node discovery. |
+| **Green breathing (2 s)** | Ground ready | Preflight checks nominal; periodic pad checks use a 2-second cadence. |
+| **Amber flashing (2.5 Hz)** | Ground caution | Lens cap, degraded usable storage rate, or low remaining capacity. |
+| **Red flashing (2.5 Hz)** | Ground critical | Missing/unusable camera or storage; deliberate PIC override policy applies. |
+| **Solid green / amber / red** | Ground armed | Nominal / accepted caution / critical override respectively. |
+| **Solid cyan** | Flight-ready / capture base state | Operational; not safe to remove power. |
+| **White flash (150 ms)** | Retained trigger issued | Confirms the orchestrator trigger, not that all three images reached storage. |
+| **Blue strobe (4 Hz)** | In-flight/ground recovery or finalization | Draining images, then logs/sync; ground state 9 also completes halt. Wait. |
+| **Solid blue** | Confirmed safe Pi halt | Stable ground, disarmed, final cleanup and halt complete. Safe to remove power/cards. |
+
+Node ACT LEDs follow Guide §6.2.5: one wink for firmware divergence, two for
+storage caution, three for lens cap. They are dark while airborne; armed-on-ground is distinct.
+Storage classification thresholds remain under design review.

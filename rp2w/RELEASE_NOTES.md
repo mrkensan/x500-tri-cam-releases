@@ -1,6 +1,25 @@
 # RP2W Compute Node Firmware - Release Notes
 
-## Release r64 (Current Production)
+> **Historical release descriptions:** entries below retain the behavior/claims
+> recorded for each artifact and are not the current design authority. Guide
+> §6.2.5 defines the intended one-wink firmware advisory and in-flight darkness.
+> Current lifecycle/signaling guidance is in `../docs/kb2040_flashing_guide.md`.
+> Documentation reconciliation does not update or recertify these binaries.
+
+## Release r86 (Test release, 2026-11-14)
+
+- **Release Tag:** `r86`
+- **Git Commit:** `42b0a52` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-14T22:17:35Z`
+- **Overlay:** `rp2w/releases/r86/x500.apkovl.tar.gz`
+- **Overlay SHA-256:** `68a1040119108b4e34cfdd4d6757c564f7a3e4d20afcc3d268fcd7c81f882e96`
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- AEC starts within its limits (the current exposure and ISO are clamped when AEC is turned on or its limits change)
+- Works with KB2040 r183 (the plan interface); every image's BYR header records the exposure and gain the sensor used
+
+## Release r64 (Previous production; rollback)
 
 - **Release Tag:** `r64`
 - **Git Commit:** `429c407`

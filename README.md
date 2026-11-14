@@ -6,13 +6,23 @@ This repository hosts pre-compiled production firmware binaries, kernel boot con
 
 ---
 
-## Current Production Releases
+## Distributed artifacts
+
+These are repository artifact pointers, not certification of the reconciled
+2026-11-07 interfaces. The complete BYR V2, SDAT and mailbox contracts
+require coordinated implementation/releases; see
+[implementation status](../Tri-Cam%20Module/IMPLEMENTATION_STATUS.md).
 
 | Subsystem | Target Hardware | Current Release | Key Capabilities |
 |---|---|---|---|
-| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r51` | In-Survey AEC, Flash Exclusivity, 100MHz SDIO, Chronological Sorties |
-| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r80` | Hardware Triggering, MAVLink v2, Fleet Version Consensus, Status LED |
+| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r86` (test release) | Plan-interface test release; AEC starts within its limits. Rollback: `r64` |
+| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r183` (test release) | Plan interface (Tri-Cam plan header, Plan Loader installed by the Tri-Cam), exposure settle triggers. Rollback: `r85` |
 | **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r2` | Triad De-Enrollment, Synchronized Ingest, RAW12 -> DNG v1.4 & JPEG |
+
+**Test release 2026-11-14 (KB2040 r183, RP2W r86):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
+first: installing, plans (the sample plan and `tricam_plan.py stamp` / `validate` in
+[`kb2040/tools/plan/`](kb2040/tools/plan/)), exposure behaviour, known limits and what is verified. Plans that use
+Tri-Cam commands now need the Tri-Cam header; the flight controller's Plan Loader is installed by the Tri-Cam itself.
 
 ---
 
@@ -56,7 +66,7 @@ python3 image_pipeline/tools/de_enroll_triad.py --wizard --dest /path/to/project
 **Step B — Convert raw Bayer imagery to Adobe DNG and JPEG:**
 ```bash
 python3 image_pipeline/tools/byr_pipeline.py \
-  --input /path/to/project_data/SORTIE_YYYYMMDD_HHMMSS \
+  --input /path/to/project_data/261107_1200_c7b8e1a0 \
   --output /path/to/processed_deliverables \
   --auto-ev \
   --workers 8

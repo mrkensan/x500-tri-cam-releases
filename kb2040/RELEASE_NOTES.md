@@ -1,6 +1,31 @@
 # KB2040 Orchestrator Firmware - Release Notes
 
-## Release r85 (Current Production)
+> **Historical release descriptions:** entries below are not the current
+> operational authority. Use User Guide Table 2 and
+> `../docs/kb2040_flashing_guide.md`: cyan is operational, solid blue is confirmed
+> safe Pi halt, and white means trigger issued. Older color/command claims are
+> not adopted by the documentation review. No binary was changed or recertified.
+
+## Release r183 (Test release, 2026-11-14)
+
+- **Release Tag:** `r183`
+- **Git Commit:** `4ac305d` (`main`)
+- **Build Timestamp:** `2026-11-14T22:18:38Z`
+- **Target Hardware:** Adafruit KB2040 (Raspberry Pi RP2040 Dual ARM Cortex-M0+)
+- **Firmware Binary:** `kb2040/releases/r183/tri_cam_kb2040.uf2`
+- **Binary SHA-256:** `b86e3efd88c04d6d55188ef734908c121324889faa69b25cffdf3ac2c80e354c`
+- **Plan Loader carried:** build 3, CRC `0x3fe7bad7`, 32,641 bytes (installed on the flight controller by the Tri-Cam)
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- Plan interface: the Tri-Cam plan header (#217), its state machine and commands; plans are checked and staged by the
+  Plan Loader on the flight controller, which allows or blocks arming
+- The Tri-Cam installs and updates the Plan Loader itself (MAVFTP; enables scripting, restarts the flight controller)
+- Exposure: two settle triggers after a change and after arming, so the next survey frame carries the new setting
+- Fix: a single photo arriving just after a pad check was accepted but never taken
+- Plan tools in `kb2040/tools/plan/`: the narrated sample plan, `tricam_plan.py stamp` and `validate`
+
+## Release r85 (Previous production; rollback)
 
 - **Release Tag:** `r85`
 - **Git Commit:** `4b23ef5`

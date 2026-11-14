@@ -2,18 +2,24 @@
 
 This guide describes how to use the host-side Image Pipeline utilities to offload, organize, and convert raw `.byr` photogrammetry datasets captured by the GCC X500 Tri-Cam system.
 
+The directory/verification examples describe the reconciled target workflow.
+Current distributed scripts have not been certified against the new contracts;
+see [implementation status](../../Tri-Cam%20Module/IMPLEMENTATION_STATUS.md)
+and the [processing spec](../../Image%20Pipeline/docs/IMAGE_PIPELINE_ARCHITECTURE_PLAN.md).
+
 ---
 
 ## 1. System Overview
 
 During flight, three Raspberry Pi Zero 2W compute nodes record synchronized raw frames into their local MicroSD cards:
-- **`Nadir`** (Channel 0 / U3)
-- **`ObliqueRt`** (Channel 1 / U2)
+- **`Nadir`** (Channel 1 / U3)
+- **`ObliqueRt`** (Channel 0 / U2)
 - **`ObliqueFwd`** (Channel 2 / U4)
 
 Each capture produces a `.byr` file containing:
 - 4 KB binary header (timestamps, trigger sequence counters, hardware ID, camera orientation, exposure time, analog gain, digital gain).
-- 18.5 MB packed 12-bit raw Bayer pixel stream (Sony IMX477, 4056×3040 resolution).
+- Full 4056×3040 RAW12 pixels, either RAW or losslessly compressed as identified
+  by that file's header. Compression-enabled capture may fall back to RAW.
 
 ---
 
@@ -39,11 +45,19 @@ python3 image_pipeline/tools/de_enroll_triad.py --wizard --dest /path/to/project
 ```
 
 #### Workflow Steps:
-1. Insert **Card 1**. The script detects the mounted card, reads the `.byr` header to determine its role (e.g. `ObliqueRt`), copies files into `/path/to/project_surveys/SORTIE_YYYYMMDD_HHMMSS/`, and records the card's CID.
+1. Insert **Card 1**. Inventory every mission/sortie/role contribution, using full
+   header identity. A dataset folder such as `261107_1200_c7b8e1a0/` displays an
+   abbreviated UUID; the manifest retains the full identity and card CID.
 2. Prompt asks to safely unmount. Remove Card 1.
 3. Insert **Card 2**. Automatically detected as `Nadir`. Files copied and verified.
 4. Insert **Card 3**. Automatically detected as `ObliqueFwd`. Files copied and verified.
-5. The script generates `triad_manifest.json` confirming that all three channels are complete with matching sequence numbers.
+5. The manifest distinguishes all three roles offloaded from a complete set of
+   triads. Missing capture indices remain gaps. Reinserted/no-new-data cards do
+   not advance the channel count; interrupted copies can resume after verification.
+
+The target receipt workflow verifies hashes/readback, commits host evidence
+before card markers and blocks normal wiping of unreadable/unverified media.
+Keep verified originals immutable; processing/PPK uses working copies.
 
 ### Single-Card / Scripted Ingest:
 If copying a single mounted partition manually:
@@ -62,15 +76,19 @@ Once a sortie folder is populated with `.byr` files, run the master conversion p
 
 ```bash
 python3 image_pipeline/tools/byr_pipeline.py \
-  --input /path/to/project_surveys/SORTIE_YYYYMMDD_HHMMSS \
-  --output /path/to/deliverables/SORTIE_YYYYMMDD_HHMMSS \
+  --input /path/to/project_surveys/261107_1200_c7b8e1a0 \
+  --output /path/to/deliverables/261107_1200_c7b8e1a0 \
   --auto-ev \
   --workers 8
 ```
 
 ### Outputs Produced:
 - **`dng/` Directory:** Standard Adobe DNG v1.4 RAW files with embedded EXIF, GPS coordinates, camera serial numbers, and exposure parameters. Ready for import into Pix4D, Agisoft Metashape, or RealityCapture.
-- **`jpg/` Directory:** High-resolution processed JPEGs with identical geotags and metadata.
+- **`jpg/` Directory:** Processed JPEGs with matching identity/geotags. Both
+  products use the agreed symmetric even crop; originals retain full raw size.
+
+Normal conversion requires canonical header v2 and its explicit sortie/validity
+fields. It must not replicate missing rows or silently process earlier layouts.
 
 ### Useful Pipeline Options:
 - `--auto-ev`: Enables automatic midtone centering and dynamic exposure compensation across variable lighting.

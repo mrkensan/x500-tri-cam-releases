@@ -11,6 +11,19 @@ In production photogrammetry operations, cards operate in a universal pool:
 2. **Hardware Strapping:** When inserted into a carrier socket, the Pi reads physical strapping pins (`GP23/GP24`) to automatically assume its role (`Nadir`, `ObliqueRt`, or `ObliqueFwd`).
 3. **Card Interchangeability:** Any card taken from the bin can be placed into any socket on the airframe without manual reconfiguration.
 
+### Reuse versus recycling
+
+A card may be returned to the aircraft without erasing it. Multiple sorties and
+missions may accumulate while capacity remains; capture does not delete earlier
+datasets. Repartitioning/reformatting is a deliberate recycling or provisioning
+step, not a requirement before every flight.
+
+`sd-prep.sh` is destructive. Verify offload of every resident dataset and its
+receipts before recycling; follow the offload interlock and use an intentional
+override only when discarding data is intended. An unreadable imagery partition
+must not be assumed empty. The receipt/interlock corner cases are being
+reconciled separately; this guide does not certify their implementation.
+
 ---
 
 ## 2. Requirements & Prerequisites
