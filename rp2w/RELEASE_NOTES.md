@@ -6,6 +6,27 @@
 > Current lifecycle/signaling guidance is in `../docs/kb2040_flashing_guide.md`.
 > Documentation reconciliation does not update or recertify these binaries.
 
+## Release r91 (Test release update, 2026-11-15)
+
+- **Release Tag:** `r91`
+- **Git Commit:** `d2b1899` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-15T09:05:32Z`
+- **Overlay:** `rp2w/releases/r91/x500.apkovl.tar.gz`
+- **Overlay SHA-256:** `16295e8094d51e5cb09f4c38426691dee0f112d06e90a54a8ff375bd8f3a8661`
+- **Works with:** KB2040 r183 (unchanged); Image Pipeline r4
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- **SD write speed:** a supervisor thread spun at real-time priority (it retried a GPIO line held by the shutdown
+  daemon without waiting), stalling SD writes for about 1 s every 2 s: about half speed much of the time, in capture
+  too. Fixed (`3951eb5`). Bench, daemon running: 8 of 8 write tests at 20.1-20.5 MB/s (before: 7 of 11 at about 10.6).
+- **No fake frames:** a node whose camera was not found fell back to a test generator and wrote synthetic frames to
+  its card without end (2.2 GB in two minutes on the bench). It now writes nothing and reports the camera fault
+  (`637b222`).
+- **Camera after a Pi-only restart:** a camera that stayed powered while only the Pi restarted (a crash, a watchdog
+  reboot) was rejected by its driver (model 0x0378 instead of 0x0477) and reported missing. The sensor now gets a
+  software reset before its driver loads (`d2b1899`). Bench: recovered and 15 of 15 photos written.
+
 ## Release r86 (Test release, 2026-11-14)
 
 - **Release Tag:** `r86`

@@ -9,14 +9,24 @@ testing: what is verified so far is listed under "Verification" below.
 | Part | Version | Notes |
 |---|---|---|
 | KB2040 firmware | r183 (`4ac305d`, `main`; UF2 SHA-256 `b86e3efd88c04d6d...`) | plan interface, settle triggers, Plan Loader installer |
-| RP2W node overlay | r86 (`42b0a52`, `main`; overlay SHA-256 `68a1040119108b4e...`) | AEC starts within its limits |
+| RP2W node overlay | r91 (`d2b1899`, `main`; overlay SHA-256 `16295e8094d51e5c...`), 2026-11-15 | r86's changes plus the fixes below |
 | Plan Loader (flight-controller script) | build 3, CRC `3FE7BAD7`, 32,641 bytes | carried by the KB2040, which installs it itself |
 | Plan tools | `kb2040/tools/plan/` | `tricam_plan.py` (validate, stamp, sample), the sample plan and its README, the Plan Loader script |
 | Image Pipeline | r4 (2026-11-15) | reads r86 image files (below) |
 
-The previous releases (KB2040 r85, RP2W r64, Image Pipeline r2) stay in the releases repository as the rollback.
+The previous releases (KB2040 r85, RP2W r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback.
 
 ## Installing
+
+**Update 2026-11-15: RP2W r91.** `git pull`, then re-prepare each node's card (`sudo ./rp2w/tools/sd-prep.sh /dev/sdX
+--release latest`; it wipes the card, so offload the images first). The KB2040 stays on r183.
+
+* **SD write speed:** r86 halved the cards' write speed much of the time (a busy loop in the capture daemon). If a
+  node reported "Slow SD write speed" or the survey interval was raised for storage, that was likely it.
+* **No fake frames:** with r86, a node whose camera was not found wrote synthetic frames to its card until it filled.
+  Check such a card for a `000000_0000_mock-ses` folder and delete it (re-preparing the card does).
+* **Camera after a Pi-only restart:** a node whose Pi restarted on its own came back reporting its camera missing until
+  the next power cycle. r91 resets the sensor at boot.
 
 **Update 2026-11-15:** `rp2w/tools/sd-prep.sh` fixed: on Fedora (btrfs root) it exited without printing anything.
 `git pull` the releases repository before preparing cards.
