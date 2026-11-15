@@ -58,6 +58,24 @@ def decompress_dpcm_payload(comp_bytes: bytes) -> bytes:
         raise RuntimeError(f"DPCM C decompression failed (returned {ret})")
     raise RuntimeError("libdpcm.so not found for DPCM-Rice decompression")
 
+# Header v2 (RP2W r86 and later): which per-frame sensor telemetry items are authentic (sensor_valid_mask, offset 612;
+# SENSOR_TLM_* in RP2W src/sensor_telemetry.h)
+SENSOR_TLM_PEDESTAL = 1 << 7
+SENSOR_TLM_CENTER_TIME = 1 << 12
+
+# Camera roles. The nodes write the short names (OblqRt, OblqFw); the pipeline uses the long ones. The socket number
+# (node_id) is the authority when the text is unknown.
+CAMERA_ROLES = ("Nadir", "ObliqueRt", "ObliqueFwd")
+ROLE_ALIASES = {"OblqRt": "ObliqueRt", "OblqFw": "ObliqueFwd", "Nadir": "Nadir", "ObliqueRt": "ObliqueRt", "ObliqueFwd": "ObliqueFwd"}
+ROLE_BY_NODE_ID = {0: "ObliqueRt", 1: "Nadir", 2: "ObliqueFwd"}
+MIN_CROP_ROWS = 6                   # IMAGE_PIPELINE_ARCHITECTURE_PLAN: C = max(6, even-ceil(top_rows_invalid))
+
+
+def canonical_role(raw: str, node_id: int) -> str:
+    role = ROLE_ALIASES.get(raw.strip())
+    return role if role else ROLE_BY_NODE_ID.get(node_id, raw)
+
+
 BAYER_PATTERNS = {
     0: "RGGB",
     1: "BGGR",
@@ -143,6 +161,40 @@ class BYRHeader:
     wb_gain_b: float = 1.8
     line_length_pck: int = 4056
     frame_length_lines: int = 3040
+    # Header v2 (offsets 612..655): authentic per-frame sensor telemetry
+    node_role_raw: str = ""                 # the role text as the node wrote it (node_role is canonical)
+    sensor_valid_mask: int = 0
+    black_pedestal_dn: int = 0
+    pixel_order_reg: int = 0
+    trigger_mode: int = 0                   # 2 = sink (external trigger)
+    sensor_exp_lines: int = 0
+    sensor_again_code: int = 0
+    sensor_dgain_reg: int = 0
+    top_rows_invalid: int = 0               # leading rows over-exposed in sink mode: to be cropped
+    exposure_center_offset_us: int = 0      # trigger edge -> exposure centre of the useful field
+
+    @property
+    def black_level_dn(self) -> int:
+        """The sensor's reported pedestal at the output bit depth (v2), else the IMX477's 256 DN at 12 bits."""
+        if self.sensor_valid_mask & SENSOR_TLM_PEDESTAL and 0 < self.black_pedestal_dn < (1 << self.bit_depth):
+            return self.black_pedestal_dn
+        return 256
+
+    @property
+    def photo_time_unix_us(self) -> int:
+        """Exposure centre of the useful pixel field: the trigger time plus the v2 offset when it is valid."""
+        if self.unix_utc_us > 0 and self.sensor_valid_mask & SENSOR_TLM_CENTER_TIME:
+            return self.unix_utc_us + self.exposure_center_offset_us
+        return self.unix_utc_us
+
+    @property
+    def crop_rows(self) -> int:
+        """Rows to crop at the top and, symmetrically, at the bottom (v2: max(6, even-ceil(top_rows_invalid))).
+        Even, so the Bayer pattern is unchanged. v1 headers: 0."""
+        if self.header_version < 2:
+            return 0
+        top = self.top_rows_invalid + (self.top_rows_invalid & 1)
+        return max(MIN_CROP_ROWS, top)
 
     @property
     def bayer_name(self) -> str:
@@ -155,8 +207,8 @@ class BYRHeader:
 
     @property
     def datetime_utc(self) -> Optional[datetime]:
-        if self.unix_utc_us > 0:
-            return datetime.fromtimestamp(self.unix_utc_us / 1_000_000.0, tz=timezone.utc)
+        if self.unix_utc_us > 0:                   # the photo time (v2: exposure centre), not only the trigger
+            return datetime.fromtimestamp(self.photo_time_unix_us / 1_000_000.0, tz=timezone.utc)
         elif self.gps_week > 0 and self.gps_tow_ms > 0:
             gps_epoch = datetime(1980, 1, 6, tzinfo=timezone.utc)
             total_sec = (self.gps_week * 7 * 86400) + (self.gps_tow_ms / 1000.0) + (self.sub_ns / 1_000_000_000.0)
@@ -207,7 +259,8 @@ class BYRHeader:
 
         # Section 3 (160..287)
         node_id = buf[160]
-        node_role = buf[161:176].decode("ascii", errors="replace").rstrip("\x00")
+        node_role_raw = buf[161:176].decode("ascii", errors="replace").rstrip("\x00")
+        node_role = canonical_role(node_role_raw, node_id)
         bcm_cpu_serial = struct.unpack("<Q", buf[176:184])[0]
         sd_cid = buf[184:200]
         sensor_model = buf[200:216].decode("ascii", errors="replace").rstrip("\x00")
@@ -243,6 +296,14 @@ class BYRHeader:
         wb_r, wb_b, line_len_pck, frame_len_lines = struct.unpack(
             "<ffHH", buf[600:612]
         )
+
+        # Header v2: per-frame sensor telemetry (612..655)
+        v2 = {}
+        if hdr_version >= 2:
+            (v2["sensor_valid_mask"], _ped_reg, v2["black_pedestal_dn"], v2["pixel_order_reg"], _orient,
+             v2["trigger_mode"]) = struct.unpack_from("<HHHBBB", buf, 612)
+            v2["sensor_exp_lines"], v2["sensor_again_code"], v2["sensor_dgain_reg"] = struct.unpack_from("<HHH", buf, 638)
+            v2["top_rows_invalid"], v2["exposure_center_offset_us"] = struct.unpack_from("<Hi", buf, 650)
 
         # Sanity check values
         if stride_bytes == 0:
@@ -327,6 +388,8 @@ class BYRHeader:
             wb_gain_b=wb_b,
             line_length_pck=line_len_pck,
             frame_length_lines=frame_len_lines,
+            node_role_raw=node_role_raw,
+            **v2,
         )
 
 

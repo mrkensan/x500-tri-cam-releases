@@ -20,6 +20,7 @@ import csv
 from typing import List, Optional
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from lib.byr_reader import BYRFile, BYR_TOTAL_FILE_BYTES
@@ -29,22 +30,39 @@ from lib.image_metrics import evaluate_bayer_metrics, ImageQualityMetrics
 
 
 def _worker_process(args_tuple):
-    byr_file, dng_dir, jpg_dir, quality, cfa, wb_mode, auto_ev, manual_ev, denoise, contrast = args_tuple
+    byr_file, dng_dir, jpg_dir, quality, cfa, wb_mode, auto_ev, manual_ev, denoise, contrast, crop = args_tuple
     return process_single_byr(byr_file, dng_dir, jpg_dir, quality=quality, cfa=cfa, wb_mode=wb_mode,
-                              auto_ev=auto_ev, manual_ev=manual_ev, denoise=denoise, contrast=contrast)
+                              auto_ev=auto_ev, manual_ev=manual_ev, denoise=denoise, contrast=contrast, crop_rows=crop)
+
+
+def run_crop_rows(byr_files: List[str]) -> dict:
+    """One crop per camera for the whole run (IMAGE_PIPELINE_ARCHITECTURE_PLAN): the largest any of its frames needs,
+    so every image of a camera has the same size. Header-only reads."""
+    crops = {}
+    for f in byr_files:
+        try:
+            h = BYRFile(f).header
+        except Exception:
+            continue
+        crops[h.node_role] = max(crops.get(h.node_role, 0), h.crop_rows)
+    return crops
 
 
 def process_single_byr(byr_path: str, dng_dir: str, jpg_dir: str, 
                        quality: int = 95, cfa: Optional[str] = None, wb_mode: str = "auto",
                        auto_ev: bool = False, manual_ev: Optional[float] = None,
-                       denoise: bool = False, contrast: float = 1.0) -> dict:
+                       denoise: bool = False, contrast: float = 1.0, crop_rows: Optional[int] = None) -> dict:
     """
     Processes a single .byr file into both DNG and JPEG outputs with optional auto-gain/EV normalization.
+    crop_rows: rows cropped at the top and bottom (None: from the header; see run_crop_rows).
     """
     t0 = time.perf_counter()
     byr = BYRFile(byr_path)
     hdr = byr.header
     pixels = byr.read_pixels()
+    c = hdr.crop_rows if crop_rows is None else crop_rows
+    if c:
+        pixels = pixels[c:pixels.shape[0] - c]       # metrics on the useful field only
 
     # Compute Image Quality Metrics (IQM)
     iqm = evaluate_bayer_metrics(pixels)
@@ -66,7 +84,7 @@ def process_single_byr(byr_path: str, dng_dir: str, jpg_dir: str,
 
     # Step 1: BYR -> DNG
     t_dng0 = time.perf_counter()
-    convert_byr_to_dng(byr, out_dng_path, compress=False, cfa_override=cfa, baseline_exposure_ev=ev_shift)
+    convert_byr_to_dng(byr, out_dng_path, compress=False, cfa_override=cfa, baseline_exposure_ev=ev_shift, crop_rows=c)
     t_dng = (time.perf_counter() - t_dng0) * 1000.0
 
     # Step 2: DNG -> JPEG
@@ -123,6 +141,8 @@ def run_pipeline(input_path: str, output_base: str, limit: int = None,
     if limit and limit > 0:
         byr_files = byr_files[:limit]
 
+    crops = run_crop_rows(byr_files)
+
     dng_dir = os.path.join(output_base, "dng")
     jpg_dir = os.path.join(output_base, "jpg")
     os.makedirs(dng_dir, exist_ok=True)
@@ -140,6 +160,8 @@ def run_pipeline(input_path: str, output_base: str, limit: int = None,
     print(f"Auto-Gain / EV Adjustment  : {ev_mode_str}")
     print(f"Despeckle / Noise Reduction: {denoise_str}")
     print(f"Contrast Tone Multiplier   : {contrast:.2f}")
+    print(f"Rows cropped top/bottom    : {', '.join(f'{r} {c}' for r, c in sorted(crops.items())) or 'none'}"
+          " (over-exposed rows of triggered capture, header v2)")
     print(f"Parallel Workers           : {workers}\n")
 
     results = []
@@ -147,7 +169,8 @@ def run_pipeline(input_path: str, output_base: str, limit: int = None,
 
     if workers > 1 and len(byr_files) > 1:
         tasks = [
-            (f, dng_dir, jpg_dir, quality, cfa, wb_mode, auto_ev, manual_ev, denoise, contrast)
+            (f, dng_dir, jpg_dir, quality, cfa, wb_mode, auto_ev, manual_ev, denoise, contrast,
+             crops.get(BYRFile(f).header.node_role))
             for f in byr_files
         ]
         with ProcessPoolExecutor(max_workers=workers) as executor:
@@ -167,7 +190,8 @@ def run_pipeline(input_path: str, output_base: str, limit: int = None,
             print(f"[{i}/{len(byr_files)}] Processing {os.path.basename(byr_file)}...")
             try:
                 res = process_single_byr(byr_file, dng_dir, jpg_dir, quality=quality, cfa=cfa, wb_mode=wb_mode,
-                                         auto_ev=auto_ev, manual_ev=manual_ev, denoise=denoise, contrast=contrast)
+                                         auto_ev=auto_ev, manual_ev=manual_ev, denoise=denoise, contrast=contrast,
+                                         crop_rows=crops.get(BYRFile(byr_file).header.node_role))
                 results.append(res)
                 iqm = res["iqm"]
                 print(f"      Role={res['role']} Seq={res['seq']:09d} GPS=({res['lat']:.6f}, {res['lon']:.6f}, {res['alt']:.1f}m)")
@@ -232,6 +256,48 @@ def run_pipeline(input_path: str, output_base: str, limit: int = None,
     print("==================================================================")
 
 
+def check_triad_manifest_gate(input_path: str, allow_partial: bool = False):
+    """
+    Checks if a triad_manifest.json exists in input_path or its parent directory.
+    If present and triad_complete is False, aborts unless allow_partial is True.
+    """
+    candidate_dirs = []
+    if os.path.isdir(input_path):
+        candidate_dirs.append(input_path)
+        candidate_dirs.append(os.path.dirname(os.path.abspath(input_path)))
+    elif os.path.isfile(input_path):
+        p = os.path.dirname(os.path.abspath(input_path))
+        candidate_dirs.append(p)
+        candidate_dirs.append(os.path.dirname(p))
+
+    for cdir in candidate_dirs:
+        mpath = os.path.join(cdir, "triad_manifest.json")
+        if os.path.isfile(mpath):
+            try:
+                with open(mpath, "r") as f:
+                    mdata = json.load(f)
+                if not mdata.get("triad_complete", False) and not allow_partial:
+                    task_uuid = mdata.get("task_uuid", "unknown")
+                    ingested = list(mdata.get("cards_ingested", {}).keys())
+                    missing = mdata.get("missing_roles", [])
+                    print("\n==================================================================", file=sys.stderr)
+                    print("   ERROR: INCOMPLETE TRIAD DATASET DETECTED!", file=sys.stderr)
+                    print("==================================================================", file=sys.stderr)
+                    print(f"Sortie UUID    : {task_uuid}", file=sys.stderr)
+                    print(f"Cards Ingested : {', '.join(ingested)} ({len(ingested)}/3)", file=sys.stderr)
+                    print(f"Missing Roles  : {', '.join(missing)} ({len(missing)}/3 NOT OFFLOADED!)", file=sys.stderr)
+                    print("", file=sys.stderr)
+                    print("Refusing to run pipeline to prevent processing an incomplete photogrammetry dataset.", file=sys.stderr)
+                    print("To override intentionally and process partial datasets, pass: --allow-partial", file=sys.stderr)
+                    print("==================================================================\n", file=sys.stderr)
+                    sys.exit(1)
+            except Exception as e:
+                if isinstance(e, SystemExit):
+                    raise
+                pass
+            break
+
+
 def main():
     parser = argparse.ArgumentParser(description="Tri-Cam .BYR -> DNG -> JPEG Processing Pipeline")
     parser.add_argument("--input", "-i", required=True, help="Input .byr file or directory containing .byr files")
@@ -246,8 +312,10 @@ def main():
     parser.add_argument("--no-iqm-report", action="store_true", help="Disable image quality metrics JSON/CSV export")
     parser.add_argument("--denoise", action="store_true", help="Enable FBDD raw wavelet denoising and chroma median filtering")
     parser.add_argument("--contrast", type=float, default=1.0, help="Contrast enhancement multiplier (e.g. 1.25 for underexposed lift)")
+    parser.add_argument("--allow-partial", action="store_true", help="Allow processing incomplete triad datasets without all 3 camera roles")
 
     args = parser.parse_args()
+    check_triad_manifest_gate(args.input, allow_partial=args.allow_partial)
     run_pipeline(args.input, args.output, limit=args.limit, quality=args.quality, cfa=args.cfa, wb_mode=args.wb_mode,
                  auto_ev=args.auto_ev, manual_ev=args.target_ev, export_iqm=not args.no_iqm_report, workers=args.workers,
                  denoise=args.denoise, contrast=args.contrast)

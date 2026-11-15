@@ -12,7 +12,7 @@ testing: what is verified so far is listed under "Verification" below.
 | RP2W node overlay | r86 (`42b0a52`, `main`; overlay SHA-256 `68a1040119108b4e...`) | AEC starts within its limits |
 | Plan Loader (flight-controller script) | build 3, CRC `3FE7BAD7`, 32,641 bytes | carried by the KB2040, which installs it itself |
 | Plan tools | `kb2040/tools/plan/` | `tricam_plan.py` (validate, stamp, sample), the sample plan and its README, the Plan Loader script |
-| Image Pipeline | r2 (unchanged) | reading r86 files not yet re-checked |
+| Image Pipeline | r4 (2026-11-15) | reads r86 image files (below) |
 
 The previous releases (KB2040 r85, RP2W r64, Image Pipeline r2) stay in the releases repository as the rollback.
 
@@ -20,6 +20,18 @@ The previous releases (KB2040 r85, RP2W r64, Image Pipeline r2) stay in the rele
 
 **Update 2026-11-15:** `rp2w/tools/sd-prep.sh` fixed: on Fedora (btrfs root) it exited without printing anything.
 `git pull` the releases repository before preparing cards.
+
+**Update 2026-11-15: Image Pipeline r4 reads this release's image files.** `git pull`, then as before:
+
+    python3 image_pipeline/tools/de_enroll_triad.py --source /path/to/mounted/card --dest /path/to/project
+    python3 image_pipeline/tools/byr_pipeline.py --input /path/to/project/<SORTIE_UUID8> --output /path/to/project/<SORTIE_UUID8>
+
+* One dataset per mission and sortie, named like the card's folders (`261114_2319_00112233/`).
+* The nodes name the obliques `OblqRt` / `OblqFw`; r4 recognises them (r2 counted those cards as missing).
+* Images are cropped by 6 rows at the top and bottom (4056 x 3028): in triggered capture the first rows are
+  over-exposed. The EXIF time is the exposure centre; exposure, ISO and black level are the sensor's own values.
+* `byr_pipeline.py` refuses a dataset with fewer than three cards offloaded; add `--allow-partial` to process it anyway.
+* Indoors, horizontal bands in the images are the lights' flicker under the rolling shutter, not a processing fault.
 
 1. **Nodes:** from the releases repository, `sudo ./rp2w/tools/sd-prep.sh /dev/sdX --release latest` for each node's
    card (it wipes the card; check the device with `lsblk` first).

@@ -155,7 +155,8 @@ def convert_byr_to_dng(byr_input: Union[str, BYRFile],
                        output_dng_path: str, 
                        compress: bool = False,
                        cfa_override: Optional[str] = None,
-                       baseline_exposure_ev: Optional[float] = None) -> str:
+                       baseline_exposure_ev: Optional[float] = None,
+                       crop_rows: Optional[int] = None) -> str:
     """
     Converts a .byr container into an Adobe DNG v1.4 RAW image.
 
@@ -166,6 +167,8 @@ def convert_byr_to_dng(byr_input: Union[str, BYRFile],
         cfa_override: Optional manual override for Bayer pattern ('RGGB', 'BGGR', etc.).
                       If None, strictly reads bayer_pattern from the .byr container header.
         baseline_exposure_ev: Optional non-destructive EV compensation offset.
+        crop_rows: Rows cropped at the top and at the bottom (even). None: from the header (v2: the over-exposed
+                   top rows of triggered capture, at least 6); a run passes one value for all its frames of a camera.
 
     Returns:
         The output DNG file path.
@@ -177,13 +180,18 @@ def convert_byr_to_dng(byr_input: Union[str, BYRFile],
 
     hdr = byr.header
     pixels = byr.read_pixels()
+    c = hdr.crop_rows if crop_rows is None else crop_rows
+    if c:
+        if c % 2 or 2 * c >= pixels.shape[0]:
+            raise ValueError(f"crop_rows {c} must be even and leave rows")
+        pixels = pixels[c:pixels.shape[0] - c]      # symmetric, so the optical centre stays; even, so the CFA stays
 
     # DNG Dimensions and bit depth
     height, width = pixels.shape
     bpp = hdr.bit_depth # 12-bit
 
-    # Black level: 256 DN for IMX477 12-bit ADC
-    black_levels = [256, 256, 256, 256]
+    # Black level: the sensor's reported pedestal (header v2), else 256 DN for the IMX477 12-bit ADC
+    black_levels = [hdr.black_level_dn] * 4
     white_level = (1 << bpp) - 1 # 4095
 
     # CFA pattern: Strictly read from .BYR container header unless explicitly overridden

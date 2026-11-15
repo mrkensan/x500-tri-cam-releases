@@ -17,6 +17,7 @@ import time
 from collections import defaultdict
 from typing import Dict, List, Optional
 
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from lib.byr_reader import BYRFile, BYRHeader
@@ -154,6 +155,51 @@ class TriCamDataset:
         self.export_manifest(output_dir)
 
 
+def check_triad_manifest_gate(inputs: List[str], allow_partial: bool = False):
+    """
+    Checks if a triad_manifest.json exists in any input path or its parent directory.
+    If present and triad_complete is False, aborts unless allow_partial is True.
+    """
+    if allow_partial:
+        return
+    for inp in inputs:
+        candidate_dirs = []
+        if os.path.isdir(inp):
+            candidate_dirs.append(inp)
+            candidate_dirs.append(os.path.dirname(os.path.abspath(inp)))
+        elif os.path.isfile(inp):
+            p = os.path.dirname(os.path.abspath(inp))
+            candidate_dirs.append(p)
+            candidate_dirs.append(os.path.dirname(p))
+
+        for cdir in candidate_dirs:
+            mpath = os.path.join(cdir, "triad_manifest.json")
+            if os.path.isfile(mpath):
+                try:
+                    with open(mpath, "r") as f:
+                        mdata = json.load(f)
+                    if not mdata.get("triad_complete", False):
+                        task_uuid = mdata.get("task_uuid", "unknown")
+                        ingested = list(mdata.get("cards_ingested", {}).keys())
+                        missing = mdata.get("missing_roles", [])
+                        print("\n==================================================================", file=sys.stderr)
+                        print("   ERROR: INCOMPLETE TRIAD DATASET DETECTED!", file=sys.stderr)
+                        print("==================================================================", file=sys.stderr)
+                        print(f"Sortie UUID    : {task_uuid}", file=sys.stderr)
+                        print(f"Cards Ingested : {', '.join(ingested)} ({len(ingested)}/3)", file=sys.stderr)
+                        print(f"Missing Roles  : {', '.join(missing)} ({len(missing)}/3 NOT OFFLOADED!)", file=sys.stderr)
+                        print("", file=sys.stderr)
+                        print("Refusing to run pipeline to prevent processing an incomplete photogrammetry dataset.", file=sys.stderr)
+                        print("To override intentionally and process partial datasets, pass: --allow-partial", file=sys.stderr)
+                        print("==================================================================\n", file=sys.stderr)
+                        sys.exit(1)
+                except Exception as e:
+                    if isinstance(e, SystemExit):
+                        raise
+                    pass
+                break
+
+
 def main():
     parser = argparse.ArgumentParser(description="Tri-Cam 3-Camera Dataset Ingestion & Harmonization")
     parser.add_argument("--inputs", "-i", nargs="+", required=True, help="Input directories or SD card mount paths")
@@ -162,8 +208,10 @@ def main():
     parser.add_argument("--no-dng", action="store_true", help="Skip DNG rendering")
     parser.add_argument("--no-jpg", action="store_true", help="Skip JPEG rendering")
     parser.add_argument("--quality", "-q", type=int, default=95, help="JPEG quality (default: 95)")
+    parser.add_argument("--allow-partial", action="store_true", help="Allow processing incomplete triad datasets without all 3 camera roles")
 
     args = parser.parse_args()
+    check_triad_manifest_gate(args.inputs, allow_partial=args.allow_partial)
 
     print("==================================================================")
     print("   Tri-Cam Multi-Camera Photogrammetry Dataset Ingest            ")

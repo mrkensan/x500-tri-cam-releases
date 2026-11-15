@@ -1,5 +1,20 @@
 # Image Pipeline Tools - Release Notes
 
+## Release r4 (Current Production)
+
+- **Release Tag:** `r4`
+- **Git Commit:** `fa96577`
+- **Build Timestamp:** `2026-11-15T00:28:19Z`
+- **Target Systems:** Host Processing Workstations (Linux x86_64, macOS, Windows)
+- **Primary Modules:** Ingestion, Triad De-Enrollment, and Bayer RAW12 Processing
+- **DPCM Accelerator SHA-256:** `24002972fce706dcab41f403c260cc403b133b8aec2e3af5223e9285bcba4395`
+
+### Summary of Changes
+- feat: read the Tri-Cam test release's image files (RP2W r86, header v2)
+- feat: triad manifest gate, schema-2 offload receipts, data-protection spec (pending work)
+- feat: add automated release enrollment pipeline
+- feat: initialize GCC X500 Tri-Cam Image Pipeline repository
+
 ## Release r2 (Current Production)
 
 - **Release Tag:** `r2`

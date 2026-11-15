@@ -17,7 +17,7 @@ require coordinated implementation/releases; see
 |---|---|---|---|
 | **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r86` (test release) | Plan-interface test release; AEC starts within its limits. Rollback: `r64` |
 | **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r183` (test release) | Plan interface (Tri-Cam plan header, Plan Loader installed by the Tri-Cam), exposure settle triggers. Rollback: `r85` |
-| **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r2` | Triad De-Enrollment, Synchronized Ingest, RAW12 -> DNG v1.4 & JPEG |
+| **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r4` | Reads the test release's (RP2W r86) image files: offload by mission and sortie, RAW12/DPCM -> DNG v1.4 & JPEG. Rollback: `r2` |
 
 **Test release 2026-11-14 (KB2040 r183, RP2W r86):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
 first: installing, plans (the sample plan and `tricam_plan.py stamp` / `validate` in
