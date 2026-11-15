@@ -6,6 +6,22 @@
 > Current lifecycle/signaling guidance is in `../docs/kb2040_flashing_guide.md`.
 > Documentation reconciliation does not update or recertify these binaries.
 
+## Release r93 (Test release update, 2026-11-15)
+
+- **Release Tag:** `r93`
+- **Git Commit:** `88750e4` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-15T09:42:25Z`
+- **Overlay:** `rp2w/releases/r93/x500.apkovl.tar.gz` (with `usercfg.txt`: `dtoverlay=imx477`, no longer `always-on`)
+- **Overlay SHA-256:** `cd3010f66871dbc0f4bf81576723a7104edba5e3381052da753351605ea64332`
+- **Works with:** KB2040 r191 (required for the shutdown order); Image Pipeline r4
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- **The camera is powered down before every halt** (Power Enable, CAM_GPIO1, goes low): a payload that is shut down no
+  longer keeps its three cameras powered, and every boot starts the camera from a power-on reset. The camera regulator
+  is no longer `always-on`; the driver holds it while running.
+- Everything in r91 (full SD write speed, no fake frames, the sensor reset before its driver loads, kept as a fallback).
+
 ## Release r91 (Test release update, 2026-11-15)
 
 - **Release Tag:** `r91`

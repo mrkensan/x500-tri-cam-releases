@@ -15,11 +15,11 @@ require coordinated implementation/releases; see
 
 | Subsystem | Target Hardware | Current Release | Key Capabilities |
 |---|---|---|---|
-| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r91` (test release) | Plan-interface test release: full SD write speed, camera reset after a Pi restart, no fake frames. Rollback: `r86`, `r64` |
-| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r183` (test release) | Plan interface (Tri-Cam plan header, Plan Loader installed by the Tri-Cam), exposure settle triggers. Rollback: `r85` |
+| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r93` (test release) | Plan-interface test release: cameras powered down at shutdown, full SD write speed, no fake frames. Use with KB2040 r191. Rollback: `r91`, `r86`, `r64` |
+| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r191` (test release) | Plan interface (Tri-Cam plan header, Plan Loader installed by the Tri-Cam), exposure settle triggers, trigger line follows camera power. Use with RP2W r93. Rollback: `r183`, `r85` |
 | **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r4` | Reads the test release's (RP2W r86) image files: offload by mission and sortie, RAW12/DPCM -> DNG v1.4 & JPEG. Rollback: `r2` |
 
-**Test release 2026-11-14 (KB2040 r183, RP2W r91 since 2026-11-15):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
+**Test release 2026-11-14 (since 2026-11-15: KB2040 r191, RP2W r93):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
 first: installing, plans (the sample plan and `tricam_plan.py stamp` / `validate` in
 [`kb2040/tools/plan/`](kb2040/tools/plan/)), exposure behaviour, known limits and what is verified. Plans that use
 Tri-Cam commands now need the Tri-Cam header; the flight controller's Plan Loader is installed by the Tri-Cam itself.

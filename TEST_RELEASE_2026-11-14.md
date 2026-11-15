@@ -8,15 +8,20 @@ testing: what is verified so far is listed under "Verification" below.
 
 | Part | Version | Notes |
 |---|---|---|
-| KB2040 firmware | r183 (`4ac305d`, `main`; UF2 SHA-256 `b86e3efd88c04d6d...`) | plan interface, settle triggers, Plan Loader installer |
-| RP2W node overlay | r91 (`d2b1899`, `main`; overlay SHA-256 `16295e8094d51e5c...`), 2026-11-15 | r86's changes plus the fixes below |
+| KB2040 firmware | r191 (`a13d8a7`, `main`; UF2 SHA-256 `eb011df0ab5a959b...`), 2026-11-15 | r183's plan interface, settle triggers and Plan Loader installer; the trigger line follows camera power |
+| RP2W node overlay | r93 (`88750e4`, `main`; overlay SHA-256 `cd3010f66871dbc0...`), 2026-11-15 | r86's changes plus the fixes below |
 | Plan Loader (flight-controller script) | build 3, CRC `3FE7BAD7`, 32,641 bytes | carried by the KB2040, which installs it itself |
 | Plan tools | `kb2040/tools/plan/` | `tricam_plan.py` (validate, stamp, sample), the sample plan and its README, the Plan Loader script |
 | Image Pipeline | r4 (2026-11-15) | reads r86 image files (below) |
 
-The previous releases (KB2040 r85, RP2W r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback.
+The previous releases (KB2040 r183 and r85, RP2W r91, r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback. KB2040 r191 and RP2W r93 go together.
 
 ## Installing
+
+**Update 2026-11-15 (later): KB2040 r191 and RP2W r93, together.** `git pull`, re-prepare each node's card
+(`sudo ./rp2w/tools/sd-prep.sh /dev/sdX --release latest`) and flash the KB2040
+(`kb2040/releases/latest/tri_cam_kb2040.uf2`). After **Shutdown** in QGC the cameras are now really off (the payload
+no longer keeps three cameras powered), and after **Wake** they start clean. Use the two releases together.
 
 **Update 2026-11-15: RP2W r91.** `git pull`, then re-prepare each node's card (`sudo ./rp2w/tools/sd-prep.sh /dev/sdX
 --release latest`; it wipes the card, so offload the images first). The KB2040 stays on r183.

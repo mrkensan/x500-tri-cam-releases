@@ -1,5 +1,22 @@
 # KB2040 Orchestrator Firmware - Release Notes
 
+## Release r191 (Test release update, 2026-11-15)
+
+- **Release Tag:** `r191`
+- **Git Commit:** `a13d8a7` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-15T10:02:58Z`
+- **Target Hardware:** Adafruit KB2040 (Raspberry Pi RP2040 Dual ARM Cortex-M0+)
+- **Firmware Binary:** `kb2040/releases/r191/tri_cam_kb2040.uf2`
+- **Binary SHA-256:** `eb011df0ab5a959ba2b7263319c4ee210dc9801d96fa52f113a9bd5103f24c01`
+- **Works with:** RP2W r93 (required: the nodes power their cameras down at shutdown); Plan Loader build 3 (unchanged)
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- **The trigger line follows camera power (design D54):** at Wake the camera trigger line is driven only once the
+  nodes run and a camera reports up (no longer at once); at Shutdown the streams are stopped first, then the line is
+  released, then the nodes are told to halt (and power their cameras down, RP2W r93).
+- Otherwise r183's plan interface, settle triggers and Plan Loader installer, unchanged.
+
 > **Historical release descriptions:** entries below are not the current
 > operational authority. Use User Guide Table 2 and
 > `../docs/kb2040_flashing_guide.md`: cyan is operational, solid blue is confirmed

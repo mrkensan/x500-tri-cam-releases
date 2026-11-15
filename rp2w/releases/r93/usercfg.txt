@@ -1,0 +1,25 @@
+gpu_mem=32
+dtoverlay=disable-wifi
+dtoverlay=disable-bt
+max_framebuffers=0
+camera_auto_detect=0
+display_auto_detect=0
+
+# Hardware UART for Application (GPIO 14/15)
+enable_uart=1
+
+# Hardware I2C Controller for Mailbox Client (GPIO 2/3)
+dtparam=i2c_arm=on
+
+# USB OTG Controller in Peripheral Mode
+dtoverlay=dwc2,dr_mode=peripheral
+
+# Enable VC4 display/media subsystem (required for CSI/Unicam clocks)
+dtoverlay=vc4-kms-v3d,noaudio
+
+# Camera mapped to physical Zero 2W CSI connector (Video-Node Centric V4L2)
+dtoverlay=imx477
+
+# SD Overclock and VPU Lock for Maximum Performance (100MHz SDIO bus rate)
+dtparam=sd_overclock=100
+force_turbo=1
