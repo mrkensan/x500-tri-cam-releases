@@ -1,5 +1,27 @@
 # KB2040 Orchestrator Firmware - Release Notes
 
+## Release r192 (Test release update, 2026-11-15)
+
+- **Release Tag:** `r192`
+- **Git Commit:** `43c6e92` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-15T10:59:51Z`
+- **Target Hardware:** Adafruit KB2040 (Raspberry Pi RP2040 Dual ARM Cortex-M0+)
+- **Firmware Binary:** `kb2040/releases/r192/tri_cam_kb2040.uf2`
+- **Binary SHA-256:** `acfc03b7990d02188235b4d667c2558c7e2d1e6740490346bd0a1b47c91b8784`
+- **Carries:** Plan Loader build 4 (installed on the flight controller by the Tri-Cam itself, one FC restart)
+- **Works with:** RP2W r93 (unchanged)
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- **Arming is blocked while any camera channel is not ready (design D55):** its node does not answer (no SD card,
+  halted, offline), its camera is missing, or its card is unusable (SD error or critically slow, 1-bit bus,
+  filesystem error). Free flight and plan flights alike: `PreArm: Tri-Cam: not ready: <channels>`. The Tri-Cam
+  says why every 8 s (`Tri-Cam: blocked: OblqRt off,Nadir cam,OblqFw SD`).
+- **Deliberate override for one arming:** `TC_ARM_OVERRIDE` (31033, p1 = 6283) from the ground station;
+  `kb2040/tools/plan/TriCamActions.json` makes it a QGroundControl Fly View action. The arming is audited.
+- **No SD cards is no longer reported as a safe shutdown:** `Tri-Cam: no camera node running (SD cards?)`.
+- Otherwise r191 (camera power sequencing, D54).
+
 ## Release r191 (Test release update, 2026-11-15)
 
 - **Release Tag:** `r191`

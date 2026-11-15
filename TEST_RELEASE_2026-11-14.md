@@ -8,15 +8,30 @@ testing: what is verified so far is listed under "Verification" below.
 
 | Part | Version | Notes |
 |---|---|---|
-| KB2040 firmware | r191 (`a13d8a7`, `main`; UF2 SHA-256 `eb011df0ab5a959b...`), 2026-11-15 | r183's plan interface, settle triggers and Plan Loader installer; the trigger line follows camera power |
+| KB2040 firmware | r192 (`43c6e92`, `main`; UF2 SHA-256 `acfc03b7990d0218...`), 2026-11-15 | r183's plan interface, settle triggers and Plan Loader installer; the trigger line follows camera power; arming blocked while a camera channel is not ready |
 | RP2W node overlay | r93 (`88750e4`, `main`; overlay SHA-256 `cd3010f66871dbc0...`), 2026-11-15 | r86's changes plus the fixes below |
-| Plan Loader (flight-controller script) | build 3, CRC `3FE7BAD7`, 32,641 bytes | carried by the KB2040, which installs it itself |
+| Plan Loader (flight-controller script) | build 4, CRC `1C881D6B`, 33,891 bytes | carried by the KB2040, which installs it itself (one FC restart) |
 | Plan tools | `kb2040/tools/plan/` | `tricam_plan.py` (validate, stamp, sample), the sample plan and its README, the Plan Loader script |
 | Image Pipeline | r4 (2026-11-15) | reads r86 image files (below) |
 
-The previous releases (KB2040 r183 and r85, RP2W r91, r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback. KB2040 r191 and RP2W r93 go together.
+The previous releases (KB2040 r191, r183 and r85, RP2W r91, r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback. KB2040 r191 or later and RP2W r93 go together.
 
 ## Installing
+
+**Update 2026-11-15 (latest): KB2040 r192. Arming is now blocked while a camera is not ready.** `git pull` and flash
+the KB2040 (`kb2040/releases/latest/tri_cam_kb2040.uf2`); the nodes stay on r93. With the autopilot connected and
+disarmed, the Tri-Cam installs Plan Loader build 4 on the flight controller by itself and restarts it once.
+
+* **What blocks arming:** any camera channel without a running node (no SD card, halted, offline), without its camera,
+  or with an unusable card (SD error or critically slow, 1-bit bus, filesystem error). QGC shows
+  `PreArm: Tri-Cam: not ready: OblqRt ...`; the Tri-Cam says why every 8 s: `Tri-Cam: blocked: OblqRt off,Nadir cam`
+  (`off`: no node, e.g. no SD card; `cam`: camera; `SD`: card). Fix it on the ground.
+* **To fly anyway (deliberately):** send the arming override, which allows the next arming only and is recorded. In
+  QGroundControl: copy `kb2040/tools/plan/TriCamActions.json` to `~/Documents/QGroundControl/MavlinkActions/` (or the
+  `MavlinkActions` folder of your QGC save location), select it in Application Settings (Fly View custom actions),
+  then Fly View, Action, "Tri-Cam: allow arming without cameras". Details: `kb2040/tools/plan/README.md`.
+* **Known:** the node's startup SD test sometimes reads a good card as critically slow after a boot (open item, under
+  investigation); that now blocks arming too. Power-cycle and check again, or use the override if you are sure.
 
 **Update 2026-11-15 (later): KB2040 r191 and RP2W r93, together.** `git pull`, re-prepare each node's card
 (`sudo ./rp2w/tools/sd-prep.sh /dev/sdX --release latest`) and flash the KB2040
