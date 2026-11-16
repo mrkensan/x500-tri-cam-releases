@@ -1,5 +1,28 @@
 # KB2040 Orchestrator Firmware - Release Notes
 
+## Release r201 (Test release update, 2026-11-16)
+
+- **Release Tag:** `r201`
+- **Git Commit:** `01aef2d` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-16T09:49:57Z`
+- **Target Hardware:** Adafruit KB2040 (Raspberry Pi RP2040 Dual ARM Cortex-M0+)
+- **Firmware Binary:** `kb2040/releases/r201/tri_cam_kb2040.uf2`
+- **Binary SHA-256:** `689d7d59935b63dde8d367bf11da7e7d20f644ccb09a14fa5f810628bb86bb80`
+- **Carries:** Plan Loader build 4 (unchanged)
+- **Works with:** RP2W r99 **only** (required: with older node cards every node shows "no boot")
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- **Each node's boot state from its INT line (design D56):** the KB2040 sees, per node and within seconds, whether a
+  node is not booting at all (`Tri-Cam: <role> no boot (SD card?)`, 3 s after power-on or Wake), booting (firmware up
+  about 1 s after power-on), or ready (the node announces itself, about 20-25 s). The mailbox polls only nodes that
+  have announced themselves; a node that restarts is caught at its next poll (`Tri-Cam: <role> restarted`) and comes
+  back by itself. No more misreading a slow boot as "halted" (which silenced the bus and blocked arming).
+- The INT lines are open-drain with the chips' internal pulls only: no hardware change (R11-R13 stay unfitted).
+- Otherwise r192 (arming blocked while a camera channel is not ready, D55; camera power sequencing, D54).
+- Bench: 20 Shutdown -> Wake cycles with all three nodes; a KB2040 restart under running nodes; a node restart; a node
+  without a card; the D55 arming test 20 of 20 on exactly this build.
+
 ## Release r192 (Test release update, 2026-11-15)
 
 - **Release Tag:** `r192`

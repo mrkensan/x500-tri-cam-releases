@@ -15,11 +15,11 @@ require coordinated implementation/releases; see
 
 | Subsystem | Target Hardware | Current Release | Key Capabilities |
 |---|---|---|---|
-| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r93` (test release) | Plan-interface test release: cameras powered down at shutdown, full SD write speed, no fake frames. Use with KB2040 r191. Rollback: `r91`, `r86`, `r64` |
-| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r192` (test release) | Plan interface (Plan Loader build 4 installed by the Tri-Cam), arming blocked while a camera channel is not ready (deliberate override), trigger line follows camera power. Use with RP2W r93. Rollback: `r191`, `r183`, `r85` |
+| **[RP2W](rp2w/)** | 3× Raspberry Pi Zero 2W | `r99` (test release) | Steady SD write speed (free space trimmed at boot), boot state on the INT line, the camera after a warm restart; cameras powered down at shutdown. Use with KB2040 r201. Rollback: `r93`, `r91`, `r86`, `r64` |
+| **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r201` (test release) | Each node's boot state from its INT line ("no boot (SD card?)" within seconds), arming blocked while a camera channel is not ready (deliberate override), Plan Loader build 4. Use with RP2W r99. Rollback: `r192` with RP2W r93 |
 | **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r4` | Reads the test release's (RP2W r86) image files: offload by mission and sortie, RAW12/DPCM -> DNG v1.4 & JPEG. Rollback: `r2` |
 
-**Test release 2026-11-14 (since 2026-11-15: KB2040 r192, RP2W r93):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
+**Test release 2026-11-14 (since 2026-11-16: KB2040 r201, RP2W r99):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
 first: installing, plans (the sample plan and `tricam_plan.py stamp` / `validate` in
 [`kb2040/tools/plan/`](kb2040/tools/plan/)), exposure behaviour, known limits and what is verified. Plans that use
 Tri-Cam commands now need the Tri-Cam header; the flight controller's Plan Loader is installed by the Tri-Cam itself.

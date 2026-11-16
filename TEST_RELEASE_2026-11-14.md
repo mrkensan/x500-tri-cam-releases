@@ -8,15 +8,31 @@ testing: what is verified so far is listed under "Verification" below.
 
 | Part | Version | Notes |
 |---|---|---|
-| KB2040 firmware | r192 (`43c6e92`, `main`; UF2 SHA-256 `acfc03b7990d0218...`), 2026-11-15 | r183's plan interface, settle triggers and Plan Loader installer; the trigger line follows camera power; arming blocked while a camera channel is not ready |
-| RP2W node overlay | r93 (`88750e4`, `main`; overlay SHA-256 `cd3010f66871dbc0...`), 2026-11-15 | r86's changes plus the fixes below |
+| KB2040 firmware | r201 (`01aef2d`, `main`; UF2 SHA-256 `689d7d59935b63dd...`), 2026-11-16 | r192's plan interface, arming gate and override; each node's boot state from its INT line |
+| RP2W node overlay | r99 (`bbcb515`, `main`; overlay SHA-256 `610f30ac465dec34...`), 2026-11-16 | r93's camera power-down plus the fixes below |
 | Plan Loader (flight-controller script) | build 4, CRC `1C881D6B`, 33,891 bytes | carried by the KB2040, which installs it itself (one FC restart) |
 | Plan tools | `kb2040/tools/plan/` | `tricam_plan.py` (validate, stamp, sample), the sample plan and its README, the Plan Loader script |
 | Image Pipeline | r4 (2026-11-15) | reads r86 image files (below) |
 
-The previous releases (KB2040 r191, r183 and r85, RP2W r91, r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback. KB2040 r191 or later and RP2W r93 go together.
+The previous releases (KB2040 r192, r191, r183 and r85, RP2W r93, r91, r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback. KB2040 r201 and RP2W r99 go together (a rollback takes both: KB2040 r192 with RP2W r93).
 
 ## Installing
+
+**Update 2026-11-16 (latest): KB2040 r201 and RP2W r99, together.** `git pull`, then **first** flash the KB2040
+(`kb2040/releases/latest/tri_cam_kb2040.uf2`), **then** re-prepare all three node cards (`sudo ./rp2w/tools/sd-prep.sh
+/dev/sdX --release latest`; it wipes the card, so offload the images first), then power up. Use the two together: the
+new KB2040 with old cards shows every node as "no boot"; never run old KB2040 firmware with the new cards.
+
+* **SD speed is steady now:** the false "critically slow" readings after a boot (and the arming blocks they caused)
+  came from space still allocated inside the cards; each boot now trims the card's free space first (about 2 s; a few
+  seconds on the first boot after preparing). Files are never touched.
+* **Missing SD card reported within seconds:** `Tri-Cam: ObliqueRt no boot (SD card?)` about 3 s after power-on or
+  Wake, per node. A node that restarts on its own is reported (`Tri-Cam: <role> restarted`) and comes back by itself.
+* **Shut down from QGC before switching off.** After a battery pull, the last few seconds of images may not be
+  recorded properly on the card, and the next boot's trim makes that loss permanent. If that happens, offload the
+  card and re-prepare it.
+* **The camera after a node restart** now comes back (before: it could be reported missing until a power cycle).
+* The "Known" item of r192 below (a good card read as critically slow) is fixed by this release.
 
 **Update 2026-11-15 (latest): KB2040 r192. Arming is now blocked while a camera is not ready.** `git pull` and flash
 the KB2040 (`kb2040/releases/latest/tri_cam_kb2040.uf2`); the nodes stay on r93. With the autopilot connected and

@@ -6,6 +6,31 @@
 > Current lifecycle/signaling guidance is in `../docs/kb2040_flashing_guide.md`.
 > Documentation reconciliation does not update or recertify these binaries.
 
+## Release r99 (Test release update, 2026-11-16)
+
+- **Release Tag:** `r99`
+- **Git Commit:** `bbcb515` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-16T07:48:11Z`
+- **Overlay:** `rp2w/releases/r99/x500.apkovl.tar.gz` (with `usercfg.txt`: `dtoverlay=imx477`, `sd_overclock=100`,
+  and new `gpio=25=op,dh`)
+- **Overlay SHA-256:** `610f30ac465dec34a94e41fd38f3f04856897d69bf2cdb2561ce8abd12efcabe`
+- **Works with:** KB2040 r201 **only** (required); Image Pipeline r4
+- **Tester notes:** [`../TEST_RELEASE_2026-11-14.md`](../TEST_RELEASE_2026-11-14.md)
+
+### Summary of Changes
+- **Steady SD write speed (the "critically slow" boots):** a card re-prepared through a USB reader, or with deleted
+  files, keeps that space allocated inside the card, which then reclaims it while writing (slow periods, stalls). Each
+  boot now trims the card's free space before the startup write test (about 2 s; a few seconds the first time). On the
+  bench the worst card went from 7 of 24 boots below 15 MB/s to 29.5-30.3 MB/s on every boot. Files are never touched.
+- **Boot state on the INT line (KB2040 design D56):** the firmware raises the node's INT line about 1 s after power-on;
+  the capture daemon announces itself when ready. Requires KB2040 r201.
+- **The camera after a warm restart:** a reboot no longer leaves the camera rejected (model `0x0378`): the camera is
+  powered down before every reboot or poweroff, the boot retry leaves it unpowered 2 s, and the camera driver resets
+  a sensor that answers with a stale id.
+- **SD diagnostics:** the startup test records its write profile, the SD clock and error counters in `session.log`; a
+  below-nominal result is forwarded to the KB2040 console.
+- Otherwise r93 (camera powered down before every halt).
+
 ## Release r93 (Test release update, 2026-11-15)
 
 - **Release Tag:** `r93`
