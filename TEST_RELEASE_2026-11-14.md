@@ -28,7 +28,8 @@ new KB2040 with old cards shows every node as "no boot"; never run old KB2040 fi
   seconds on the first boot after preparing). Files are never touched.
 * **Missing SD card reported within seconds:** `Tri-Cam: ObliqueRt no boot (SD card?)` about 3 s after power-on or
   Wake, per node. A node that restarts on its own is reported (`Tri-Cam: <role> restarted`) and comes back by itself.
-* **The camera after a node restart** now comes back (before: it could be reported missing until a power cycle).
+* **The camera after a node restart** should now come back (changes made, not yet confirmed on our bench). If a node
+  still reports its camera missing after a restart, a Shutdown then Wake, or a power cycle, recovers it.
 * The "Known" item of r192 below (a good card read as critically slow) is fixed by this release.
 
 **Update 2026-11-15 (latest): KB2040 r192. Arming is now blocked while a camera is not ready.** `git pull` and flash

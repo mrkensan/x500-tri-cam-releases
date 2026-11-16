@@ -24,9 +24,11 @@
   bench the worst card went from 7 of 24 boots below 15 MB/s to 29.5-30.3 MB/s on every boot. Files are never touched.
 - **Boot state on the INT line (KB2040 design D56):** the firmware raises the node's INT line about 1 s after power-on;
   the capture daemon announces itself when ready. Requires KB2040 r201.
-- **The camera after a warm restart:** a reboot no longer leaves the camera rejected (model `0x0378`): the camera is
-  powered down before every reboot or poweroff, the boot retry leaves it unpowered 2 s, and the camera driver resets
-  a sensor that answers with a stale id.
+- **The camera after a warm restart (changes made, not yet validated):** the camera is powered down before every reboot
+  or poweroff, the boot retry leaves it unpowered 2 s, and the camera driver resets a sensor that answers with a stale
+  id (model `0x0378`). On the bench the camera came back after four restarts, but the stale state did not occur in
+  them, so the fix itself has not yet been seen working. If a node reports its camera missing after a restart, a
+  Shutdown then Wake, or a power cycle, recovers it.
 - **SD diagnostics:** the startup test records its write profile, the SD clock and error counters in `session.log`; a
   below-nominal result is forwarded to the KB2040 console.
 - Otherwise r93 (camera powered down before every halt).
