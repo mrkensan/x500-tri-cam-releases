@@ -28,9 +28,6 @@ new KB2040 with old cards shows every node as "no boot"; never run old KB2040 fi
   seconds on the first boot after preparing). Files are never touched.
 * **Missing SD card reported within seconds:** `Tri-Cam: ObliqueRt no boot (SD card?)` about 3 s after power-on or
   Wake, per node. A node that restarts on its own is reported (`Tri-Cam: <role> restarted`) and comes back by itself.
-* **Shut down from QGC before switching off.** After a battery pull, the last few seconds of images may not be
-  recorded properly on the card, and the next boot's trim makes that loss permanent. If that happens, offload the
-  card and re-prepare it.
 * **The camera after a node restart** now comes back (before: it could be reported missing until a power cycle).
 * The "Known" item of r192 below (a good card read as critically slow) is fixed by this release.
 
