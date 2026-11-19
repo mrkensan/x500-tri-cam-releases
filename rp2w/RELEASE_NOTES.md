@@ -6,6 +6,28 @@
 > Current lifecycle/signaling guidance is in `../docs/kb2040_flashing_guide.md`.
 > Documentation reconciliation does not update or recertify these binaries.
 
+## Release r125 (Milepost, 2026-11-19: bench only, **not for the field**; `latest` stays r99)
+
+- **Release Tag:** `r125`
+- **Git Commit:** `d0880bf` (`main`, clean tree; daemon tag `r125-d0880bf`)
+- **Build Timestamp:** `2026-11-19T08:59:39Z`
+- **Overlay:** `rp2w/releases/r125/x500.apkovl.tar.gz` (`usercfg.txt` and `cmdline.txt` unchanged since r121)
+- **Overlay SHA-256:** `33785e63e2fa198d2a86038ac86c5ca028e6065d4f3fcec83bfbd3638c7069da`
+- **Works with:** KB2040 r280 **only** (the post-flight lifecycle, D57)
+- **Status:** a development milepost recorded before mailbox v2. Test pilots keep KB2040 r201 + RP2W r99.
+
+### Summary of Changes (since r99)
+- **The post-flight lifecycle on the node (KB2040 design D57):** on PREPARE_SHUTDOWN the node writes its queued images,
+  flushes its log, syncs, unmounts its imagery and puts its boot partition read-only, then reports READY_FOR_SHDN and
+  stays up; SHDN then powers it off (one owner of the halt, `piz_shdn_daemon`). The card's capacity is frozen at
+  PREPARE.
+- **Only the KB2040 pulls the INT line (D59):** GP25 is read with its bias disabled (its pull-up fought the KB2040's
+  pull-down after a missed grant: an undefined level), and the node announces again once its line has been held low
+  1 s without a grant (about 2 s back after a missed grant or a KB2040 restart).
+- The daemon's build tag no longer reads `-dirty` for overlay builds from a clean tree.
+- Bench on exactly this overlay with KB2040 r280 (KB2040 `reports/bench-d57-s6-20261118/README.md`): the post-flight
+  run 264/264, the missed-grant case 29/29, the RP2W battery, the KB2040 batteries and MB1 15/15.
+
 ## Release r99 (Test release update, 2026-11-16)
 
 - **Release Tag:** `r99`

@@ -1,5 +1,30 @@
 # KB2040 Orchestrator Firmware - Release Notes
 
+## Release r280 (Milepost, 2026-11-19: bench only, **not for the field**; `latest` stays r201)
+
+- **Release Tag:** `r280`
+- **Git Commit:** `36d5266` (`main`, clean tree)
+- **Build Timestamp:** `2026-11-19T09:00:43Z`
+- **Target Hardware:** Adafruit KB2040 (Raspberry Pi RP2040 Dual ARM Cortex-M0+)
+- **Firmware Binary:** `kb2040/releases/r280/tri_cam_kb2040.uf2`
+- **Binary SHA-256:** `ac9b1358945aa6443a7327f54b19f2f8f6126e3285165ebbd311ab067b551eb1`
+- **Carries:** Plan Loader build 5 (installed on the flight controller by the Tri-Cam itself, one FC restart)
+- **Works with:** RP2W r125 **only**
+- **Status:** a development milepost recorded before mailbox v2. Test pilots keep KB2040 r201 + RP2W r99.
+
+### Summary of Changes (since r201)
+- **The post-flight lifecycle (design D57):** a disarm after a flight halts the nodes in order (the pause, PREPARE:
+  each node unmounts its imagery, then SHDN); the unit is retired until a plan upload restarts it (`TC_RESTART`, Plan
+  Loader build 5) or a power cycle; LED patterns for the halt and its outcome; a lost FC link while armed is treated
+  as a crash; restarts follow a persistent record.
+- **The halt waits for every node seen operating since arming (issue B, B2):** a node that misses a grant or restarts
+  is still waited for, gets PREPARE at its announce, and is named if it never reports READY (`Halt unconfirmed`).
+- **The mailbox slave's handler runs from RAM (D58):** fixes the nodes' intermittent I2C read failures and refused
+  grants (MB1: none in 15 min under a console flood).
+- Plan Loader build 5: the retired gate text, the End rule (`PLAN ERROR (NO_END)`).
+- Bench on exactly this build with RP2W r125 (`reports/bench-d57-s6-20261118/README.md` in the KB2040 repository):
+  the post-flight run 264/264, plan interface 115/115, end to end 34/34, arming gate 24/24, exposure 47/47, MB1 15/15.
+
 ## Release r201 (Test release update, 2026-11-16)
 
 - **Release Tag:** `r201`

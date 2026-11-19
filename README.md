@@ -19,6 +19,9 @@ require coordinated implementation/releases; see
 | **[KB2040](kb2040/)** | Adafruit KB2040 (RP2040) | `r201` (test release) | Each node's boot state from its INT line ("no boot (SD card?)" within seconds), arming blocked while a camera channel is not ready (deliberate override), Plan Loader build 4. Use with RP2W r99. Rollback: `r192` with RP2W r93 |
 | **[Image Pipeline](image_pipeline/)** | Host Workstation (Linux/macOS/Win) | `r4` | Reads the test release's (RP2W r86) image files: offload by mission and sortie, RAW12/DPCM -> DNG v1.4 & JPEG. Rollback: `r2` |
 
+**Milepost 2026-11-19 (KB2040 r280 + RP2W r125): bench only, not for the field.** Recorded in the release notes;
+`latest` still points to the test release below. Do not install it on a test aircraft.
+
 **Test release 2026-11-14 (since 2026-11-16: KB2040 r201, RP2W r99):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
 first: installing, plans (the sample plan and `tricam_plan.py stamp` / `validate` in
 [`kb2040/tools/plan/`](kb2040/tools/plan/)), exposure behaviour, known limits and what is verified. Plans that use

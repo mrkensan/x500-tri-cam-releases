@@ -1,0 +1,1 @@
+coherent_pool=1M 8250.nr_uarts=1 console=tty1 cma=128M modules=loop,squashfs,sd-mod,usb-storage rootfs_suppress_check=1 fw_devlink=off

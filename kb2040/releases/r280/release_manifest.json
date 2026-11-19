@@ -1,0 +1,8 @@
+{
+  "commit_count": 280,
+  "git_commit": "36d5266",
+  "git_dirty": 0,
+  "build_timestamp": "2026-11-19T09:00:43Z",
+  "firmware_uf2_sha256": "ac9b1358945aa6443a7327f54b19f2f8f6126e3285165ebbd311ab067b551eb1",
+  "firmware_size_bytes": 401408
+}
