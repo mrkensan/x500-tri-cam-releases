@@ -1,0 +1,618 @@
+{
+  "fileType": "Plan",
+  "_tricam": {
+    "format": "Tri-Cam plan",
+    "interfaceVersion": 1,
+    "uuid": "5a3b1e5a-3b1e-5a3b-1e5a-3b1e5a3b1e01",
+    "generator": "Tri-Cam sample plan",
+    "created": "2026-11-20T00:00:00Z",
+    "description": "Sample: AEC_Cal, two survey legs, an exposure change between them. Give it its own UUID with `tricam_plan_check.py stamp` before flying.",
+    "warning": "DO NOT EDIT. Tri-Cam reads the #217 header items in the mission, not this block."
+  },
+  "geoFence": {
+    "circles": [],
+    "polygons": [],
+    "version": 2
+  },
+  "groundStation": "QGroundControl",
+  "mission": {
+    "cruiseSpeed": 5,
+    "firmwareType": 3,
+    "hoverSpeed": 5,
+    "items": [
+      {
+        "_comment": "TRI-CAM HEADER (do not edit by hand; `tricam_plan_check.py stamp` gives the plan its own UUID): mission UUID, survey settings (1.5 s, adaptive, DPCM) and the starting exposure (1/1000 s, ISO 400, all cameras)",
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 1,
+        "frame": 2,
+        "params": [
+          256,
+          5505280.0,
+          0.0,
+          5.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 2,
+        "frame": 2,
+        "params": [
+          513,
+          5913374.0,
+          5913374.0,
+          5913374.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 3,
+        "frame": 2,
+        "params": [
+          770,
+          5913374.0,
+          5913374.0,
+          65536.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 4,
+        "frame": 2,
+        "params": [
+          1027,
+          1089351.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 5,
+        "frame": 2,
+        "params": [
+          1284,
+          14356516.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 6,
+        "frame": 2,
+        "params": [
+          1541,
+          20941.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Take-off to 40 m. Keep the Tri-Cam header above the first navigation item.",
+        "autoContinue": true,
+        "command": 22,
+        "doJumpId": 7,
+        "frame": 3,
+        "params": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          40
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "AEC_Cal settings (6 frames at 1.5 s). Optional: delete this block, down to its Pause, to fly the header's exposure instead.",
+        "autoContinue": true,
+        "command": 531,
+        "doJumpId": 8,
+        "frame": 2,
+        "params": [
+          1,
+          8843079.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Every Tri-Cam command is followed by a #112 delay (0.1 s).",
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 9,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "AEC_Cal's limits: exposure at most 1/1000 s, ISO at most 800 (all cameras).",
+        "autoContinue": true,
+        "command": 531,
+        "doJumpId": 10,
+        "frame": 2,
+        "params": [
+          2,
+          7577636.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 11,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Start: runs AEC_Cal now (its frames are not kept); it ends with the Pause below and keeps what it learned.",
+        "autoContinue": true,
+        "command": 2500,
+        "doJumpId": 12,
+        "frame": 2,
+        "params": [
+          0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 13,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": ">>> YOUR APPROACH WAYPOINTS HERE (AEC_Cal runs while flying them). Example waypoint: replace it.",
+        "autoContinue": true,
+        "command": 16,
+        "doJumpId": 14,
+        "frame": 3,
+        "params": [
+          0,
+          0,
+          0,
+          0,
+          37.3751,
+          -122.0321,
+          40
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Example waypoint: replace it.",
+        "autoContinue": true,
+        "command": 16,
+        "doJumpId": 15,
+        "frame": 3,
+        "params": [
+          0,
+          0,
+          0,
+          0,
+          37.3761,
+          -122.0321,
+          40
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Pause: AEC_Cal ends; the exposure it learned becomes the fixed exposure.",
+        "autoContinue": true,
+        "command": 2501,
+        "doJumpId": 16,
+        "frame": 2,
+        "params": [
+          0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 17,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Survey settings for leg 1 (keep the learned exposure).",
+        "autoContinue": true,
+        "command": 531,
+        "doJumpId": 18,
+        "frame": 2,
+        "params": [
+          1,
+          1089351.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 19,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Start: survey leg 1. The cameras trigger every 1.5 s from here to the Pause.",
+        "autoContinue": true,
+        "command": 2500,
+        "doJumpId": 20,
+        "frame": 2,
+        "params": [
+          0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 21,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": ">>> YOUR LEG 1 WAYPOINTS HERE. Example waypoint: replace it.",
+        "autoContinue": true,
+        "command": 16,
+        "doJumpId": 22,
+        "frame": 3,
+        "params": [
+          0,
+          0,
+          0,
+          0,
+          37.3761,
+          -122.0311,
+          40
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Example waypoint: replace it.",
+        "autoContinue": true,
+        "command": 16,
+        "doJumpId": 23,
+        "frame": 3,
+        "params": [
+          0,
+          0,
+          0,
+          0,
+          37.3751,
+          -122.0311,
+          40
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Pause: no photos on the turn.",
+        "autoContinue": true,
+        "command": 2501,
+        "doJumpId": 24,
+        "frame": 2,
+        "params": [
+          0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 25,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Optional: a new exposure for leg 2 (1/2000 s, ISO 400, all cameras). Change it only between a Pause and a Start; delete this item and its delay to keep the exposure.",
+        "autoContinue": true,
+        "command": 531,
+        "doJumpId": 26,
+        "frame": 2,
+        "params": [
+          2,
+          12521490.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 27,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Survey settings for leg 2.",
+        "autoContinue": true,
+        "command": 531,
+        "doJumpId": 28,
+        "frame": 2,
+        "params": [
+          1,
+          1089351.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 29,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Start: survey leg 2.",
+        "autoContinue": true,
+        "command": 2500,
+        "doJumpId": 30,
+        "frame": 2,
+        "params": [
+          0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 31,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": ">>> YOUR LEG 2 WAYPOINTS HERE (more legs: repeat Pause, settings, Start, waypoints). Example waypoint: replace it.",
+        "autoContinue": true,
+        "command": 16,
+        "doJumpId": 32,
+        "frame": 3,
+        "params": [
+          0,
+          0,
+          0,
+          0,
+          37.3741,
+          -122.0311,
+          40
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "End: the survey is over for this flight (no more photos until the next arming).",
+        "autoContinue": true,
+        "command": 532,
+        "doJumpId": 33,
+        "frame": 2,
+        "params": [
+          4,
+          0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 112,
+        "doJumpId": 34,
+        "frame": 2,
+        "params": [
+          0.1,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "_comment": "Return to launch.",
+        "autoContinue": true,
+        "command": 20,
+        "doJumpId": 35,
+        "frame": 3,
+        "params": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      }
+    ],
+    "plannedHomePosition": [
+      37.375,
+      -122.032,
+      100.0
+    ],
+    "vehicleType": 2,
+    "version": 2,
+    "_comment": "DO NOT EDIT! The first six #217 items are Tri-Cam Config."
+  },
+  "rallyPoints": {
+    "points": [],
+    "version": 2
+  },
+  "version": 1
+}

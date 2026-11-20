@@ -23,9 +23,13 @@ require coordinated implementation/releases; see
 `latest` still points to the test release below. Do not install it on a test aircraft.
 
 **Test release 2026-11-14 (since 2026-11-16: KB2040 r201, RP2W r99):** read **[TEST_RELEASE_2026-11-14.md](TEST_RELEASE_2026-11-14.md)**
-first: installing, plans (the sample plan and `tricam_plan.py stamp` / `validate` in
-[`kb2040/tools/plan/`](kb2040/tools/plan/)), exposure behaviour, known limits and what is verified. Plans that use
+first: installing, plans (the sample plan and `tricam_plan_check.py stamp` / `validate` in
+[`plan_development/`](plan_development/)), exposure behaviour, known limits and what is verified. Plans that use
 Tri-Cam commands now need the Tri-Cam header; the flight controller's Plan Loader is installed by the Tri-Cam itself.
+
+**Plans: [`plan_development/`](plan_development/)** is the plan development kit, for plan authors and developers of
+plan-generating tools: the [Plan Development Guide](plan_development/PLAN_DEVELOPMENT_GUIDE.md), the validator
+`tricam_plan_check.py`, encoder vectors, example plans and test plans.
 
 ---
 
@@ -84,6 +88,8 @@ For complete workflow details, see **[Image Pipeline Processing Guide](docs/imag
 - **[MicroSD Card Preparation Guide](docs/sd_card_prep_guide.md)** — Flash alignment, partition layout, and troubleshooting.
 - **[KB2040 Flashing Guide](docs/kb2040_flashing_guide.md)** — USB reset methods and bootloader diagnostics.
 - **[Image Pipeline Processing Guide](docs/image_pipeline_guide.md)** — Ingest options, DNG raw metadata, and JPEG rendering options.
+- **[Plan Development Guide](plan_development/PLAN_DEVELOPMENT_GUIDE.md)** — Tri-Cam plans: structure, encoding, rules, and validating them ([kit](plan_development/README.md)).
+- **[Arming Override Guide](docs/arming_override_guide.md)** — When the Tri-Cam blocks arming, and the deliberate override (QGroundControl action).
 - **[RP2W Release Notes](rp2w/RELEASE_NOTES.md)** — Revision history and technical changes for compute nodes.
 - **[KB2040 Release Notes](kb2040/RELEASE_NOTES.md)** — Revision history and technical changes for the orchestrator.
 - **[Image Pipeline Release Notes](image_pipeline/RELEASE_NOTES.md)** — Ingestion and processing tool release details.

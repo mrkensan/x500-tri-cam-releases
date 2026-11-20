@@ -66,7 +66,8 @@
   filesystem error). Free flight and plan flights alike: `PreArm: Tri-Cam: not ready: <channels>`. The Tri-Cam
   says why every 8 s (`Tri-Cam: blocked: OblqRt off,Nadir cam,OblqFw SD`).
 - **Deliberate override for one arming:** `TC_ARM_OVERRIDE` (31033, p1 = 6283) from the ground station;
-  `kb2040/tools/plan/TriCamActions.json` makes it a QGroundControl Fly View action. The arming is audited.
+  `docs/TriCamActions.json` makes it a QGroundControl Fly View action (`kb2040/tools/plan/` until 2026-11-20;
+  [`docs/arming_override_guide.md`](../docs/arming_override_guide.md)). The arming is audited.
 - **No SD cards is no longer reported as a safe shutdown:** `Tri-Cam: no camera node running (SD cards?)`.
 - Otherwise r191 (camera power sequencing, D54).
 
@@ -110,7 +111,8 @@
 - The Tri-Cam installs and updates the Plan Loader itself (MAVFTP; enables scripting, restarts the flight controller)
 - Exposure: two settle triggers after a change and after arming, so the next survey frame carries the new setting
 - Fix: a single photo arriving just after a pad check was accepted but never taken
-- Plan tools in `kb2040/tools/plan/`: the narrated sample plan, `tricam_plan.py stamp` and `validate`
+- Plan tools: the narrated sample plan, `stamp` and `validate` (since 2026-11-20 the plan development kit,
+  [`plan_development/`](../plan_development/), with `tricam_plan_check.py`; it replaced `kb2040/tools/plan/`)
 
 ## Release r85 (Previous production; rollback)
 

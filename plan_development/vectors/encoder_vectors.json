@@ -1,0 +1,417 @@
+{
+ "_comment": "Bit-exact vectors for a Tri-Cam plan generator (plan interface version 1): every word, header item and fingerprint here must be reproduced exactly. Field names and layouts: PLAN_DEVELOPMENT_GUIDE.md. Generated; do not edit.",
+ "version": 1,
+ "crc16_ccitt_false_check": {
+  "input_ascii": "123456789",
+  "crc": 10673,
+  "crc_hex": "29B1"
+ },
+ "series_valid": [
+  {
+   "name": "defaults-1.5s-adaptive-aec-dpcm",
+   "fields": {
+    "interval_n": 71,
+    "max_scale": 15,
+    "adaptive": 1,
+    "exposure_mode": 2,
+    "compression": 1,
+    "aec_cal_frames": 0
+   },
+   "word": 9494343,
+   "word_hex": "90DF47",
+   "param2": 9494343.0,
+   "interval_s": 1.494
+  },
+  {
+   "name": "min-interval-fixed-raw",
+   "fields": {
+    "interval_n": 0,
+    "max_scale": 0,
+    "adaptive": 0,
+    "exposure_mode": 1,
+    "compression": 0,
+    "aec_cal_frames": 0
+   },
+   "word": 8192,
+   "word_hex": "002000",
+   "param2": 8192.0,
+   "interval_s": 0.5
+  },
+  {
+   "name": "max-interval-4s",
+   "fields": {
+    "interval_n": 250,
+    "max_scale": 15,
+    "adaptive": 1,
+    "exposure_mode": 0,
+    "compression": 0,
+    "aec_cal_frames": 0
+   },
+   "word": 7348218,
+   "word_hex": "701FFA",
+   "param2": 7348218.0,
+   "interval_s": 4.0
+  },
+  {
+   "name": "aec-cal-8-frames",
+   "fields": {
+    "interval_n": 36,
+    "max_scale": 7,
+    "adaptive": 0,
+    "exposure_mode": 3,
+    "compression": 0,
+    "aec_cal_frames": 8
+   },
+   "word": 550692,
+   "word_hex": "086724",
+   "param2": 550692.0,
+   "interval_s": 1.004
+  },
+  {
+   "name": "aec-cal-15-frames-1.2s",
+   "fields": {
+    "interval_n": 50,
+    "max_scale": 15,
+    "adaptive": 1,
+    "exposure_mode": 3,
+    "compression": 1,
+    "aec_cal_frames": 15
+   },
+   "word": 15728434,
+   "word_hex": "EFFF32",
+   "param2": 15728434.0,
+   "interval_s": 1.2
+  },
+  {
+   "name": "no-exposure-change",
+   "fields": {
+    "interval_n": 50,
+    "max_scale": 3,
+    "adaptive": 0,
+    "exposure_mode": 0,
+    "compression": 1,
+    "aec_cal_frames": 0
+   },
+   "word": 12616498,
+   "word_hex": "C08332",
+   "param2": 12616498.0,
+   "interval_s": 1.2
+  }
+ ],
+ "sensor_valid": [
+  {
+   "name": "fixed-1/1000-iso400-all",
+   "fields": {
+    "exposure_lines": 36,
+    "iso_step": 8,
+    "bounds": 0,
+    "channel": 3
+   },
+   "word": 14356516,
+   "word_hex": "DB1024",
+   "param2": 14356516.0,
+   "exposure_us": 994.8,
+   "iso": 400
+  },
+  {
+   "name": "aec-bounds-1/500-iso800-all",
+   "fields": {
+    "exposure_lines": 72,
+    "iso_step": 16,
+    "bounds": 1,
+    "channel": 3
+   },
+   "word": 12296264,
+   "word_hex": "BBA048",
+   "param2": 12296264.0,
+   "exposure_us": 1989.7,
+   "iso": 800
+  },
+  {
+   "name": "node1-only-fixed",
+   "fields": {
+    "exposure_lines": 20,
+    "iso_step": 4,
+    "bounds": 0,
+    "channel": 1
+   },
+   "word": 9766932,
+   "word_hex": "950814",
+   "param2": 9766932.0,
+   "exposure_us": 552.7,
+   "iso": 200
+  },
+  {
+   "name": "no-change-both",
+   "fields": {
+    "exposure_lines": 0,
+    "iso_step": 0,
+    "bounds": 0,
+    "channel": 3
+   },
+   "word": 5963776,
+   "word_hex": "5B0000",
+   "param2": 5963776.0,
+   "exposure_us": 0.0,
+   "iso": 0
+  },
+  {
+   "name": "max-exposure-iso2200",
+   "fields": {
+    "exposure_lines": 362,
+    "iso_step": 44,
+    "bounds": 1,
+    "channel": 0
+   },
+   "word": 2152810,
+   "word_hex": "20D96A",
+   "param2": 2152810.0,
+   "exposure_us": 10003.7,
+   "iso": 2200
+  }
+ ],
+ "word_invalid": [
+  {
+   "kind": "series",
+   "word": 0,
+   "why": "all-zero word never passes the check"
+  },
+  {
+   "kind": "series",
+   "word": 9494087,
+   "why": "single field edited, check unchanged"
+  },
+  {
+   "kind": "series",
+   "word": 8445767,
+   "why": "check bit flipped"
+  },
+  {
+   "kind": "series",
+   "word": 16777216,
+   "why": "more than 24 bits"
+  },
+  {
+   "kind": "series",
+   "word": 2109435,
+   "why": "interval code 251 is reserved (valid check, illegal value)"
+  },
+  {
+   "kind": "series",
+   "word": 7499570,
+   "why": "exposure mode 3 with AEC_Cal frames 2: must be 0 or at least 4 (valid check, illegal value)"
+  },
+  {
+   "kind": "sensor",
+   "word": 0,
+   "why": "all-zero word never passes the check"
+  },
+  {
+   "kind": "sensor",
+   "word": 14356517,
+   "why": "single field edited, check unchanged"
+  },
+  {
+   "kind": "sensor",
+   "word": 8651265,
+   "why": "ISO step 1 is not allowed (0 or 2..44); valid check, illegal value"
+  }
+ ],
+ "header": {
+  "uuid": "00112233445566778899aabbccddeeff",
+  "plan_loaded_message": "Tri-Cam: Plan 00112233 Loaded",
+  "init_series_word": 9494343,
+  "init_sensor_words": [
+   3641380
+  ],
+  "fingerprint": 16726,
+  "fingerprint_hex": "4156",
+  "items": [
+   {
+    "command": 217,
+    "params": [
+     256,
+     5505280.0,
+     0.0,
+     5.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     513,
+     4386.0,
+     3359829.0,
+     6715272.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     770,
+     10070715.0,
+     13426158.0,
+     16711680.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     1027,
+     9494343.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     1284,
+     3641380.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     1541,
+     16726.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "fingerprint_input_hex": "01005401000000000000050201001122334455667788030299AABBCCDDEEFF0000040390DF470000000000000504379024000000000000"
+ },
+ "header_minimal": {
+  "uuid": "00112233445566778899aabbccddeeff",
+  "items": [
+   {
+    "command": 217,
+    "params": [
+     256,
+     5505280.0,
+     0.0,
+     3.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     513,
+     4386.0,
+     3359829.0,
+     6715272.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     770,
+     10070715.0,
+     13426158.0,
+     16711680.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "command": 217,
+    "params": [
+     1539,
+     7673.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "fingerprint": 7673,
+  "fingerprint_input_hex": "01005401000000000000030201001122334455667788030299AABBCCDDEEFF0000"
+ },
+ "conversions": {
+  "interval_code_to_seconds": [
+   [
+    0,
+    0.5
+   ],
+   [
+    50,
+    1.2
+   ],
+   [
+    107,
+    1.998
+   ],
+   [
+    250,
+    4.0
+   ]
+  ],
+  "exposure_line_us": 27.6345238,
+  "denominator_to_lines": [
+   [
+    1000,
+    36
+   ],
+   [
+    500,
+    72
+   ],
+   [
+    2000,
+    18
+   ],
+   [
+    3333,
+    11
+   ]
+  ],
+  "iso_step_to_iso": [
+   [
+    2,
+    100
+   ],
+   [
+    8,
+    400
+   ],
+   [
+    16,
+    800
+   ],
+   [
+    44,
+    2200
+   ]
+  ]
+ }
+}

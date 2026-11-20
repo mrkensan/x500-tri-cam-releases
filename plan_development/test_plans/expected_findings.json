@@ -1,0 +1,669 @@
+{
+ "_comment": "What `tricam_plan_check.py validate --json` reports for each plan in this folder (result, and each finding: rule, code, level, item = mission sequence number or null for the plan as a whole, text, and message = what the aircraft shows, null for a file-only finding). Generated; do not edit.",
+ "plan_loader_build": 5,
+ "plans": {
+  "01_example_plan_clean.plan": {
+   "case": "example plan (clean)",
+   "result": "OK",
+   "findings": []
+  },
+  "02_header_only_clean.plan": {
+   "case": "header only (clean)",
+   "result": "OK",
+   "findings": []
+  },
+  "03_no_header_survey_commands.plan": {
+   "case": "no header, survey commands",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-NO-HEADER",
+     "code": "NO_HEADER",
+     "level": "ERROR",
+     "item": 2,
+     "text": "survey commands present but no Tri-Cam header (they would be ignored); the message names the first survey command",
+     "message": "Tri-Cam: PLAN ERROR (NO_HEADER) item 2"
+    }
+   ]
+  },
+  "04_no_header_camera_items_not_judged.plan": {
+   "case": "no header, camera items not judged",
+   "result": "OK",
+   "findings": []
+  },
+  "05_series_2000_in_a_plan.plan": {
+   "case": "series #2000 in a plan",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-SINGLE-FORM",
+     "code": "SINGLE",
+     "level": "ERROR",
+     "item": 33,
+     "text": "#2000 in a plan must be exactly a single shot (p1 = 0, p2 = 0, p3 = 1); a series would be run by the flight controller as repeated single shots. Use the header and Start for surveys",
+     "message": "Tri-Cam: PLAN ERROR (SINGLE) item 33"
+    }
+   ]
+  },
+  "06_2001_in_a_plan.plan": {
+   "case": "#2001 in a plan",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-FORBIDDEN-2001",
+     "code": "STOP",
+     "level": "ERROR",
+     "item": 33,
+     "text": "#2001 (stop capture) in a plan: it only stops a flight-controller photo series, which a plan must not start",
+     "message": "Tri-Cam: PLAN ERROR (STOP) item 33"
+    }
+   ]
+  },
+  "07_203_in_a_plan.plan": {
+   "case": "#203 in a plan",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-FORBIDDEN-203",
+     "code": "DIGICAM",
+     "level": "ERROR",
+     "item": 33,
+     "text": "#203 (digicam control) in a plan: the flight controller turns it into a photo trigger outside the Tri-Cam's rules",
+     "message": "Tri-Cam: PLAN ERROR (DIGICAM) item 33"
+    }
+   ]
+  },
+  "08_206_in_a_plan.plan": {
+   "case": "#206 in a plan",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-FORBIDDEN-206",
+     "code": "TRIG_DIST",
+     "level": "ERROR",
+     "item": 33,
+     "text": "#206 (camera trigger distance) in a plan: the flight controller would fire photos by distance, ignoring the Tri-Cam's state",
+     "message": "Tri-Cam: PLAN ERROR (TRIG_DIST) item 33"
+    }
+   ]
+  },
+  "09_command_after_the_final_navigation_item.plan": {
+   "case": "command after the final navigation item",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-AFTER-NAV",
+     "code": "AFTER_NAV",
+     "level": "ERROR",
+     "item": 35,
+     "text": "Tri-Cam command after the final navigation item: only the first item after it runs, later ones never do",
+     "message": "Tri-Cam: PLAN ERROR (AFTER_NAV) item 35"
+    }
+   ]
+  },
+  "10_missing_112_between_commands.plan": {
+   "case": "missing #112 between commands",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-PACING",
+     "code": "PACING",
+     "level": "ERROR",
+     "item": 9,
+     "text": "fewer than 0.1s of #112 delay since previous Tri-Cam command (item 8)",
+     "message": "Tri-Cam: PLAN ERROR (PACING) item 9"
+    }
+   ]
+  },
+  "11_singles_0_1_s_apart.plan": {
+   "case": "singles 0.1 s apart",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-PACING",
+     "code": "PACING",
+     "level": "ERROR",
+     "item": 8,
+     "text": "fewer than 0.25s of #112 delay since previous #2000 (item 6)",
+     "message": "Tri-Cam: PLAN ERROR (PACING) item 8"
+    }
+   ]
+  },
+  "12_start_with_p1_1.plan": {
+   "case": "Start with p1 = 1",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-START-P1",
+     "code": "P1",
+     "level": "ERROR",
+     "item": 6,
+     "text": "Start in a plan must have p1 = 0 (stream id 0; p2 to p7 are ignored)",
+     "message": "Tri-Cam: PLAN ERROR (P1) item 6"
+    }
+   ]
+  },
+  "13_edited_config_word.plan": {
+   "case": "edited config word",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-BAD-WORD",
+     "code": "BAD_WORD",
+     "level": "ERROR",
+     "item": 8,
+     "text": "bad word: check bits mismatch",
+     "message": "Tri-Cam: PLAN ERROR (BAD_WORD) item 8"
+    }
+   ]
+  },
+  "14_start_while_aec_cal_runs.plan": {
+   "case": "Start while AEC_Cal runs",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-CAL-BUSY",
+     "code": "CAL_BUSY",
+     "level": "ERROR",
+     "item": 11,
+     "text": "Start while AEC_Cal is running would be ignored: send a Pause first (item 9)",
+     "message": "Tri-Cam: PLAN ERROR (CAL_BUSY) item 11"
+    }
+   ]
+  },
+  "15_config_word_while_aec_cal_runs.plan": {
+   "case": "config word while AEC_Cal runs",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-CAL-BUSY",
+     "code": "CAL_BUSY",
+     "level": "ERROR",
+     "item": 11,
+     "text": "config word while AEC_Cal is running would be ignored: send a Pause first (item 9)",
+     "message": "Tri-Cam: PLAN ERROR (CAL_BUSY) item 11"
+    }
+   ]
+  },
+  "16_single_while_aec_cal_runs.plan": {
+   "case": "single while AEC_Cal runs",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-CAL-SINGLE",
+     "code": "CAL_BUSY",
+     "level": "ERROR",
+     "item": 11,
+     "text": "single shot while AEC_Cal is running would be ignored",
+     "message": "Tri-Cam: PLAN ERROR (CAL_BUSY) item 11"
+    }
+   ]
+  },
+  "17_pause_cuts_aec_cal_short.plan": {
+   "case": "Pause cuts AEC_Cal short",
+   "result": "OK",
+   "findings": [
+    {
+     "rule": "P-CAL-SHORT",
+     "code": "CAL_SHORT",
+     "level": "WARNING",
+     "item": 11,
+     "text": "Pause cuts AEC_Cal short (1.0s of delay, about 0 frames, 9.0s for a full run); its results are reverted",
+     "message": "Tri-Cam: Plan warning (CAL_SHORT) item 11"
+    }
+   ]
+  },
+  "18_aec_cal_then_survey_clean.plan": {
+   "case": "AEC_Cal then survey (clean)",
+   "result": "OK",
+   "findings": []
+  },
+  "19_config_while_active_is_refused.plan": {
+   "case": "config while Active is refused",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-REFUSED",
+     "code": "REFUSED",
+     "level": "ERROR",
+     "item": 8,
+     "text": "CFG would be refused in state ACTIVE",
+     "message": "Tri-Cam: PLAN ERROR (REFUSED) item 8"
+    }
+   ]
+  },
+  "20_start_while_active_does_nothing.plan": {
+   "case": "Start while Active does nothing",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-START-NOOP",
+     "code": "NOOP",
+     "level": "ERROR",
+     "item": 8,
+     "text": "Start while the survey is already running does nothing",
+     "message": "Tri-Cam: PLAN ERROR (NOOP) item 8"
+    }
+   ]
+  },
+  "21_fixed_sensor_word_with_aec_mode.plan": {
+   "case": "fixed Sensor word with AEC mode",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-SENSOR-MODE",
+     "code": "SENSOR",
+     "level": "ERROR",
+     "item": 9,
+     "text": "Sensor word (header Sensor stanza, fixed values, all cameras) does not match exposure mode 2 at this Start, so the Tri-Cam would ignore it",
+     "message": "Tri-Cam: PLAN ERROR (SENSOR) item 9"
+    }
+   ]
+  },
+  "22_a_survey_without_end.plan": {
+   "case": "a survey without End",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-NO-END",
+     "code": "NO_END",
+     "level": "ERROR",
+     "item": null,
+     "text": "a survey Start but no End (#532, p1 = 4) before the final navigation item: ArduPilot reports the mission complete only when its last item finishes (at the landing for an RTL or LAND ending), too late to have the cards synced before landing",
+     "message": "Tri-Cam: PLAN ERROR (NO_END)"
+    }
+   ]
+  },
+  "23_a_survey_paused_never_ended.plan": {
+   "case": "a survey paused, never ended",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-NO-END",
+     "code": "NO_END",
+     "level": "ERROR",
+     "item": null,
+     "text": "a survey Start but no End (#532, p1 = 4) before the final navigation item: ArduPilot reports the mission complete only when its last item finishes (at the landing for an RTL or LAND ending), too late to have the cards synced before landing",
+     "message": "Tri-Cam: PLAN ERROR (NO_END)"
+    }
+   ]
+  },
+  "24_end_only_after_the_final_navigation_item.plan": {
+   "case": "End only after the final navigation item",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-NO-END",
+     "code": "NO_END",
+     "level": "ERROR",
+     "item": null,
+     "text": "a survey Start but no End (#532, p1 = 4) before the final navigation item: ArduPilot reports the mission complete only when its last item finishes (at the landing for an RTL or LAND ending), too late to have the cards synced before landing",
+     "message": "Tri-Cam: PLAN ERROR (NO_END)"
+    },
+    {
+     "rule": "P-AFTER-NAV",
+     "code": "AFTER_NAV",
+     "level": "ERROR",
+     "item": 34,
+     "text": "Tri-Cam command after the final navigation item: only the first item after it runs, later ones never do",
+     "message": "Tri-Cam: PLAN ERROR (AFTER_NAV) item 34"
+    }
+   ]
+  },
+  "25_aec_cal_started_never_ended.plan": {
+   "case": "AEC_Cal started, never ended",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "P-NO-END",
+     "code": "NO_END",
+     "level": "ERROR",
+     "item": null,
+     "text": "a survey Start but no End (#532, p1 = 4) before the final navigation item: ArduPilot reports the mission complete only when its last item finishes (at the landing for an RTL or LAND ending), too late to have the cards synced before landing",
+     "message": "Tri-Cam: PLAN ERROR (NO_END)"
+    }
+   ]
+  },
+  "26_header_bad_check_value.plan": {
+   "case": "header: bad-check-value",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-CHECK",
+     "code": "CHECK",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: CHECK (the header fingerprint does not match (something was edited or reordered))",
+     "message": "Tri-Cam: PLAN INVALID (CHECK)"
+    }
+   ]
+  },
+  "27_header_edited_uuid_word.plan": {
+   "case": "header: edited-uuid-word",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-CHECK",
+     "code": "CHECK",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: CHECK (the header fingerprint does not match (something was edited or reordered))",
+     "message": "Tri-Cam: PLAN INVALID (CHECK)"
+    }
+   ]
+  },
+  "28_header_position_gap.plan": {
+   "case": "header: position-gap",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-ORDER",
+     "code": "ORDER",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: ORDER (header stanzas out of order, a position gap or a repeated optional stanza)",
+     "message": "Tri-Cam: PLAN INVALID (ORDER)"
+    }
+   ]
+  },
+  "29_header_version_2.plan": {
+   "case": "header: version-2",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-VERSION",
+     "code": "VERSION",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: VERSION (the header version is not one the Plan Loader reads)",
+     "message": "Tri-Cam: PLAN INVALID (VERSION)"
+    }
+   ]
+  },
+  "30_header_count_too_big.plan": {
+   "case": "header: count-too-big",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-COUNT",
+     "code": "COUNT",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: COUNT (the header's stanza count does not match, or the Check stanza is not last)",
+     "message": "Tri-Cam: PLAN INVALID (COUNT)"
+    }
+   ]
+  },
+  "31_header_count_too_small.plan": {
+   "case": "header: count-too-small",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-COUNT",
+     "code": "COUNT",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: COUNT (the header's stanza count does not match, or the Check stanza is not last)",
+     "message": "Tri-Cam: PLAN INVALID (COUNT)"
+    }
+   ]
+  },
+  "32_header_header_reserved_word_nonzero.plan": {
+   "case": "header: header-reserved-word-nonzero",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-RESERVED",
+     "code": "RESERVED",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: RESERVED (a reserved word or flag is not 0)",
+     "message": "Tri-Cam: PLAN INVALID (RESERVED)"
+    }
+   ]
+  },
+  "33_header_uuid_all_zero.plan": {
+   "case": "header: uuid-all-zero",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-UUID",
+     "code": "UUID",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: UUID (the mission UUID is missing, all 0x00 or all 0xFF)",
+     "message": "Tri-Cam: PLAN INVALID (UUID)"
+    }
+   ]
+  },
+  "34_header_uuid_all_ff.plan": {
+   "case": "header: uuid-all-ff",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-UUID",
+     "code": "UUID",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: UUID (the mission UUID is missing, all 0x00 or all 0xFF)",
+     "message": "Tri-Cam: PLAN INVALID (UUID)"
+    }
+   ]
+  },
+  "35_header_uuid_b_before_a.plan": {
+   "case": "header: uuid-b-before-a",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-ORDER",
+     "code": "ORDER",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: ORDER (header stanzas out of order, a position gap or a repeated optional stanza)",
+     "message": "Tri-Cam: PLAN INVALID (ORDER)"
+    }
+   ]
+  },
+  "36_header_unknown_stanza_type.plan": {
+   "case": "header: unknown-stanza-type",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-STANZA",
+     "code": "STANZA",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: STANZA (unknown stanza type)",
+     "message": "Tri-Cam: PLAN INVALID (STANZA)"
+    }
+   ]
+  },
+  "37_header_two_series_stanzas.plan": {
+   "case": "header: two-series-stanzas",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-ORDER",
+     "code": "ORDER",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: ORDER (header stanzas out of order, a position gap or a repeated optional stanza)",
+     "message": "Tri-Cam: PLAN INVALID (ORDER)"
+    }
+   ]
+  },
+  "38_header_four_sensor_stanzas.plan": {
+   "case": "header: four-sensor-stanzas",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-ORDER",
+     "code": "ORDER",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: ORDER (header stanzas out of order, a position gap or a repeated optional stanza)",
+     "message": "Tri-Cam: PLAN INVALID (ORDER)"
+    }
+   ]
+  },
+  "39_header_embedded_word_bad_check.plan": {
+   "case": "header: embedded-word-bad-check",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-WORD",
+     "code": "WORD",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: WORD (an embedded Series or Sensor word failed its check or range, or the header's Series word selects exposure mode 3)",
+     "message": "Tri-Cam: PLAN INVALID (WORD)"
+    }
+   ]
+  },
+  "40_header_series_reserved_words_nonzero.plan": {
+   "case": "header: series-reserved-words-nonzero",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-RESERVED",
+     "code": "RESERVED",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: RESERVED (a reserved word or flag is not 0)",
+     "message": "Tri-Cam: PLAN INVALID (RESERVED)"
+    }
+   ]
+  },
+  "41_header_header_reserved_position_nonzero.plan": {
+   "case": "header: header-reserved-position-nonzero",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-ORDER",
+     "code": "ORDER",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: ORDER (header stanzas out of order, a position gap or a repeated optional stanza)",
+     "message": "Tri-Cam: PLAN INVALID (ORDER)"
+    }
+   ]
+  },
+  "42_header_check_reserved_word_nonzero.plan": {
+   "case": "header: check-reserved-word-nonzero",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-RESERVED",
+     "code": "RESERVED",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: RESERVED (a reserved word or flag is not 0)",
+     "message": "Tri-Cam: PLAN INVALID (RESERVED)"
+    }
+   ]
+  },
+  "43_header_uuid_b_padding_nonzero.plan": {
+   "case": "header: uuid-b-padding-nonzero",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-RESERVED",
+     "code": "RESERVED",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: RESERVED (a reserved word or flag is not 0)",
+     "message": "Tri-Cam: PLAN INVALID (RESERVED)"
+    }
+   ]
+  },
+  "44_header_foreign_item_between_stanzas.plan": {
+   "case": "header: foreign-item-between-stanzas",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-PLACEMENT",
+     "code": "PLACEMENT",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: PLACEMENT (header items are not consecutive, or not before the first navigation item)",
+     "message": "Tri-Cam: PLAN INVALID (PLACEMENT)"
+    }
+   ]
+  },
+  "45_header_header_after_first_navigation_item.plan": {
+   "case": "header: header-after-first-navigation-item",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-PLACEMENT",
+     "code": "PLACEMENT",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: PLACEMENT (header items are not consecutive, or not before the first navigation item)",
+     "message": "Tri-Cam: PLAN INVALID (PLACEMENT)"
+    }
+   ]
+  },
+  "46_header_header_series_exposure_mode_3.plan": {
+   "case": "header: header-series-exposure-mode-3",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-WORD",
+     "code": "WORD",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: WORD (an embedded Series or Sensor word failed its check or range, or the header's Series word selects exposure mode 3)",
+     "message": "Tri-Cam: PLAN INVALID (WORD)"
+    }
+   ]
+  },
+  "47_header_duplicate_header.plan": {
+   "case": "header: duplicate-header",
+   "result": "FAILED",
+   "findings": [
+    {
+     "rule": "H-DUPLICATE",
+     "code": "DUPLICATE",
+     "level": "ERROR",
+     "item": null,
+     "text": "header invalid: DUPLICATE (more than one Header stanza)",
+     "message": "Tri-Cam: PLAN INVALID (DUPLICATE)"
+    }
+   ]
+  },
+  "48_annotation_uuid_differs_from_the_header.plan": {
+   "case": "annotation UUID differs from the header",
+   "result": "OK",
+   "findings": [
+    {
+     "rule": "F-ANNOTATION-UUID",
+     "code": "ANNOT_UUID",
+     "level": "WARNING",
+     "item": null,
+     "text": "annotation uuid 01020304-0506-0708-090a-0b0c0d0e0f10 differs from the header UUID 00112233-4455-6677-8899-aabbccddeeff",
+     "message": null
+    }
+   ]
+  },
+  "49_annotation_interfaceversion_differs_from_the_header.plan": {
+   "case": "annotation interfaceVersion differs from the header",
+   "result": "OK",
+   "findings": [
+    {
+     "rule": "F-ANNOTATION-VERSION",
+     "code": "ANNOT_VER",
+     "level": "WARNING",
+     "item": null,
+     "text": "annotation interfaceVersion differs from the header version",
+     "message": null
+    }
+   ]
+  },
+  "50_saved_by_qgroundcontrol_null_parameters_clean.plan": {
+   "case": "saved by QGroundControl: null parameters (clean)",
+   "result": "OK",
+   "findings": []
+  }
+ }
+}

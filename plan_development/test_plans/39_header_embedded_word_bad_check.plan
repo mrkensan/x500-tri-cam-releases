@@ -1,0 +1,108 @@
+{
+  "fileType": "Plan",
+  "geoFence": {
+    "circles": [],
+    "polygons": [],
+    "version": 2
+  },
+  "groundStation": "QGroundControl",
+  "mission": {
+    "cruiseSpeed": 5,
+    "firmwareType": 3,
+    "hoverSpeed": 5,
+    "items": [
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 1,
+        "frame": 2,
+        "params": [
+          256,
+          5505280.0,
+          0.0,
+          4.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 2,
+        "frame": 2,
+        "params": [
+          513,
+          4386.0,
+          3359829.0,
+          6715272.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 3,
+        "frame": 2,
+        "params": [
+          770,
+          10070715.0,
+          13426158.0,
+          16711680.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 4,
+        "frame": 2,
+        "params": [
+          1027,
+          9494342.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      },
+      {
+        "autoContinue": true,
+        "command": 217,
+        "doJumpId": 5,
+        "frame": 2,
+        "params": [
+          1540,
+          7092.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "type": "SimpleItem"
+      }
+    ],
+    "plannedHomePosition": [
+      37.375,
+      -122.032,
+      100.0
+    ],
+    "vehicleType": 2,
+    "version": 2
+  },
+  "rallyPoints": {
+    "points": [],
+    "version": 2
+  },
+  "version": 1
+}

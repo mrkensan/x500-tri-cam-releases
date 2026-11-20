@@ -1,0 +1,20 @@
+{
+    "version":    1,
+    "fileType":   "MavlinkActions",
+    "actions": [
+        {
+            "label":        "Tri-Cam: allow arming without cameras",
+            "description":  "Overrides the Tri-Cam readiness block for the NEXT arming only (no node, camera or usable SD card on a channel). Deliberate: the flight will not have all its images. Audited.",
+            "mavCmd":       31033,
+            "compId":       100,
+            "param1":       6283
+        },
+        {
+            "label":        "Tri-Cam: cancel the arming override",
+            "description":  "Cancels a pending Tri-Cam arming override.",
+            "mavCmd":       31033,
+            "compId":       100,
+            "param1":       0
+        }
+    ]
+}

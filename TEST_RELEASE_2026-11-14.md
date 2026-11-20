@@ -11,12 +11,20 @@ testing: what is verified so far is listed under "Verification" below.
 | KB2040 firmware | r201 (`01aef2d`, `main`; UF2 SHA-256 `689d7d59935b63dd...`), 2026-11-16 | r192's plan interface, arming gate and override; each node's boot state from its INT line |
 | RP2W node overlay | r99 (`bbcb515`, `main`; overlay SHA-256 `610f30ac465dec34...`), 2026-11-16 | r93's camera power-down plus the fixes below |
 | Plan Loader (flight-controller script) | build 4, CRC `1C881D6B`, 33,891 bytes | carried by the KB2040, which installs it itself (one FC restart) |
-| Plan tools | `kb2040/tools/plan/` | `tricam_plan.py` (validate, stamp, sample), the sample plan and its README, the Plan Loader script |
+| Plan tools | `plan_development/` (since 2026-11-20) | `tricam_plan_check.py` (validate, stamp), the sample plan and the kit's README, the Plan Development Guide |
 | Image Pipeline | r4 (2026-11-15) | reads r86 image files (below) |
 
 The previous releases (KB2040 r192, r191, r183 and r85, RP2W r93, r91, r86 and r64, Image Pipeline r2) stay in the releases repository as the rollback. KB2040 r201 and RP2W r99 go together (a rollback takes both: KB2040 r192 with RP2W r93).
 
 ## Installing
+
+**Update 2026-11-20: the plan tools moved to [`plan_development/`](plan_development/)** (`kb2040/tools/plan/` is
+gone). Nothing to install: `git pull`, then use `python3 plan_development/tricam_plan_check.py stamp` and `validate`
+instead of `tricam_plan.py` (section "Plans"). The QGroundControl action for the arming override is now
+[`docs/TriCamActions.json`](docs/TriCamActions.json). The kit checks the rules of Plan Loader build 5, which adds one
+to this release's build 4: a plan that starts a survey must End it before its final navigation item (the sample
+does); a plan that passes the kit meets build 4's rules too. The validator also reads plans saved by QGroundControl
+(its `null` parameters made `tricam_plan.py` fail).
 
 **Update 2026-11-16 (latest): KB2040 r201 and RP2W r99, together.** `git pull`, then **first** flash the KB2040
 (`kb2040/releases/latest/tri_cam_kb2040.uf2`), **then** re-prepare all three node cards (`sudo ./rp2w/tools/sd-prep.sh
@@ -41,9 +49,9 @@ disarmed, the Tri-Cam installs Plan Loader build 4 on the flight controller by i
   `PreArm: Tri-Cam: not ready: OblqRt ...`; the Tri-Cam says why every 8 s: `Tri-Cam: blocked: OblqRt off,Nadir cam`
   (`off`: no node, e.g. no SD card; `cam`: camera; `SD`: card). Fix it on the ground.
 * **To fly anyway (deliberately):** send the arming override, which allows the next arming only and is recorded. In
-  QGroundControl: copy `kb2040/tools/plan/TriCamActions.json` to `~/Documents/QGroundControl/MavlinkActions/` (or the
+  QGroundControl: copy `docs/TriCamActions.json` to `~/Documents/QGroundControl/MavlinkActions/` (or the
   `MavlinkActions` folder of your QGC save location), select it in Application Settings (Fly View custom actions),
-  then Fly View, Action, "Tri-Cam: allow arming without cameras". Details: `kb2040/tools/plan/README.md`.
+  then Fly View, Action, "Tri-Cam: allow arming without cameras". Details: `docs/arming_override_guide.md`.
 * **Known:** the node's startup SD test sometimes reads a good card as critically slow after a boot (open item, under
   investigation); that now blocks arming too. Power-cycle and check again, or use the override if you are sure.
 
@@ -90,13 +98,15 @@ no longer keeps three cameras powered), and after **Wake** they start clean. Use
 
 ## Plans
 
-* Start from `tricam_sample.plan`: every normal Tri-Cam command, narrated, with marked spots for your waypoints (its
-  README explains each block). `python3 tricam_plan.py stamp tricam_sample.plan my.plan` gives your plan its own
-  mission UUID; `python3 tricam_plan.py validate my.plan` checks it before you upload.
+* Start from `plan_development/examples/tricam_sample.plan`: every normal Tri-Cam command, narrated, with marked
+  spots for your waypoints (`plan_development/README.md` explains each block). In `plan_development/`,
+  `python3 tricam_plan_check.py stamp examples/tricam_sample.plan my.plan` gives your plan its own mission UUID;
+  `python3 tricam_plan_check.py validate my.plan` checks it before you upload.
 * A plan that uses Tri-Cam commands needs the Tri-Cam header (the first #217 items); never edit those items by hand.
 * QGroundControl's Survey camera triggering (`#206`) is refused in a plan: turn it off in the Survey tool.
-* After upload the flight controller says `Tri-Cam: Plan 1a2b3c4d Loaded` (your UUID's first eight digits); at arming
-  the Tri-Cam says `Tri-Cam: Mission 1a2b3c4d sortie <date_time>`. If the plan has a problem, arming is refused with
+* After upload the flight controller says `Tri-Cam: Plan 1A2B3C4D Loaded` (your UUID's first eight digits, in
+  uppercase; corrected 2026-11-20, these notes showed them in lowercase); at arming the Tri-Cam says
+  `Tri-Cam: Mission 1A2B3C4D sortie <date_time>`. If the plan has a problem, arming is refused with
   `PreArm: Tri-Cam: PLAN ERROR (...) item N`, the first problem by item number.
 
 ## Exposure
