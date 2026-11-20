@@ -641,7 +641,7 @@
      "code": "ANNOT_UUID",
      "level": "WARNING",
      "item": null,
-     "text": "annotation uuid 01020304-0506-0708-090a-0b0c0d0e0f10 differs from the header UUID 00112233-4455-6677-8899-aabbccddeeff",
+     "text": "the annotation's Mission UUID 01020304-0506-0708-090a-0b0c0d0e0f10 differs from the header's mission UUID 00112233-4455-6677-8899-aabbccddeeff",
      "message": null
     }
    ]

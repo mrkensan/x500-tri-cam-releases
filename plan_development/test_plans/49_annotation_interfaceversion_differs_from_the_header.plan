@@ -3,7 +3,7 @@
   "_tricam": {
     "format": "Tri-Cam plan",
     "interfaceVersion": 2,
-    "uuid": "00112233-4455-6677-8899-aabbccddeeff",
+    "Mission UUID": "00112233-4455-6677-8899-aabbccddeeff",
     "created": "2026-11-20T00:00:00Z",
     "warning": "DO NOT EDIT. Tri-Cam reads the #217 header items in the mission, not this block."
   },

@@ -184,7 +184,7 @@ and QGroundControl drops them when it saves the plan:
   "_tricam": {
     "format": "Tri-Cam plan",
     "interfaceVersion": 1,
-    "uuid": "00112233-4455-6677-8899-aabbccddeeff",
+    "Mission UUID": "00112233-4455-6677-8899-aabbccddeeff",
     "generator": "your tool and its version",
     "created": "2026-11-20T00:00:00Z",
     "description": "free text",
@@ -197,8 +197,9 @@ and QGroundControl drops them when it saves the plan:
 }
 ```
 
-`uuid` is the mission UUID in lowercase 8-4-4-4-12 form and `interfaceVersion` the header version; `created` and
-`description` are optional. If either disagrees with the header, the validator warns (`ANNOT_UUID`, `ANNOT_VER`).
+`Mission UUID` (the key is spelled exactly so, with its space) is the mission UUID in lowercase 8-4-4-4-12 form, and
+`interfaceVersion` the header version; `generator`, `created` and `description` are optional. If either of the first
+two disagrees with the header, or is missing, the validator warns (`ANNOT_UUID`, `ANNOT_VER`).
 
 ## 5. Tri-Cam commands
 

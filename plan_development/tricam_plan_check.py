@@ -40,6 +40,7 @@ S_HEADER, S_UUID_A, S_UUID_B, S_SERIES, S_SENSOR, S_CHECK = 1, 2, 3, 4, 5, 6
 MAX_SENSORS = 3
 DEFAULT_SERIES = {'interval_n': 36, 'max_scale': 15, 'adaptive': 0, 'exposure_mode': 1, 'compression': 0, 'aec_cal_frames': 0}   # the settings in force without a Series word
 ANNOTATION_KEY = '_tricam'
+ANNOTATION_UUID = 'Mission UUID'   # the annotation's key for the mission UUID
 FORMS = {
     'header': 'Tri-Cam: PLAN INVALID ({code})',
     'plan': 'Tri-Cam: PLAN ERROR ({code})',
@@ -73,7 +74,7 @@ RULES = {
     'P-START-NOOP': {'code': 'NOOP', 'scope': 'item', 'severity': 'error', 'text': 'Start while the survey is already running does nothing'},
     'P-SENSOR-MODE': {'code': 'SENSOR', 'scope': 'item', 'severity': 'error', 'text': 'Sensor word ({where}, {kind}, {cameras}) does not match exposure mode {mode} at this Start, so the Tri-Cam would ignore it'},
     'P-CAL-SHORT': {'code': 'CAL_SHORT', 'scope': 'item', 'severity': 'warning', 'text': 'Pause cuts AEC_Cal short ({budget}s of delay, about {frames} frames, {need}s for a full run); {verdict}'},
-    'F-ANNOTATION-UUID': {'code': 'ANNOT_UUID', 'scope': 'file', 'severity': 'warning', 'text': 'annotation uuid {annotation} differs from the header UUID {header}'},
+    'F-ANNOTATION-UUID': {'code': 'ANNOT_UUID', 'scope': 'file', 'severity': 'warning', 'text': "the annotation's Mission UUID {annotation} differs from the header's mission UUID {header}"},
     'F-ANNOTATION-VERSION': {'code': 'ANNOT_VER', 'scope': 'file', 'severity': 'warning', 'text': 'annotation interfaceVersion differs from the header version'},
 }
 TABLE = {   # state -> event -> rules in order: (condition, next state, accepted, effects)
@@ -509,8 +510,8 @@ def check_annotations(annotation, header: Header) -> List[Finding]:
     """The optional annotation block is for people only; warn when it disagrees with the header."""
     if not isinstance(annotation, dict) or header.status != "OK": return []
     out = []
-    if str(annotation.get("uuid", "")).lower() != uuid_text(header.uuid):
-        out.append(finding("F-ANNOTATION-UUID", -1, annotation=annotation.get("uuid"), header=uuid_text(header.uuid)))
+    if str(annotation.get(ANNOTATION_UUID, "")).lower() != uuid_text(header.uuid):
+        out.append(finding("F-ANNOTATION-UUID", -1, annotation=annotation.get(ANNOTATION_UUID), header=uuid_text(header.uuid)))
     if annotation.get("interfaceVersion") != PROTOCOL_VERSION:
         out.append(finding("F-ANNOTATION-VERSION", -1))
     return out
@@ -611,7 +612,7 @@ def stamp_plan(src: str, dst: str, new_uuid: Optional[bytes] = None) -> bytes:
     for it, n in zip(header_items, new):
         it["params"] = n["params"]
     if isinstance(plan.get(ANNOTATION_KEY), dict):
-        plan[ANNOTATION_KEY]["uuid"] = uuid_text(uuid)
+        plan[ANNOTATION_KEY][ANNOTATION_UUID] = uuid_text(uuid)
     with open(dst, "w", encoding="utf8") as f:
         json.dump(plan, f, indent=2)
         f.write("\n")

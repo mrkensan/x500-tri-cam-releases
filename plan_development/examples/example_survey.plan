@@ -3,7 +3,7 @@
   "_tricam": {
     "format": "Tri-Cam plan",
     "interfaceVersion": 1,
-    "uuid": "00112233-4455-6677-8899-aabbccddeeff",
+    "Mission UUID": "00112233-4455-6677-8899-aabbccddeeff",
     "generator": "Tri-Cam worked example",
     "created": "2026-11-20T00:00:00Z",
     "description": "Worked example (the guide's): AEC_Cal, then a survey with a turnaround, 1.5 s adaptive AEC.",
